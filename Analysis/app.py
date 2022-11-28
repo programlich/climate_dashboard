@@ -8,6 +8,8 @@ import os
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 
+
+
 ###############################
 ## Global temperature change ##
 ###############################
@@ -76,9 +78,67 @@ for country in emissions_inverted_merged["Country"].unique().tolist():
 dict_list_countries
 
 # Create dash app
-app = dash.Dash(external_stylesheets=[dbc.themes.MINTY])
+app = dash.Dash(external_stylesheets=[dbc.themes.SUPERHERO])
 
-app.layout = html.Div(children=[
+
+app.layout = dbc.Container([
+            
+            # Header row
+            dbc.Row(
+                dbc.Col(html.H1("Klimadashboard"),width={"size":6,"offset":3}),
+                justify="center",style={"margin-bottom":"40px","margin-top":"20px"}),
+            
+            # Header row first graphs
+            dbc.Row(
+                dbc.Col(html.H2("Änderung der globalen Oberflächentemperatur relativ zum Zeitraum 1850-1900",style={"text-align":"center"}),
+                width={"size":10,"offset":1},align="center"),
+                justify="center"),
+
+            # First row
+            dbc.Row([
+                # First col
+                dbc.Col([
+            
+                #Temp line graph
+                dcc.Graph(figure=fig_temp_line)
+                        ], width=7),
+            
+                dbc.Col([
+                        dcc.Graph(figure=fig_temp_bar)
+                        ],width=3)
+
+
+                    ],align="end",justify="center",style={"margin-bottom":"30px"}), # Close first row
+       
+            # Second header row
+            dbc.Row(dbc.Col(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger"),
+                    width={"size":8,"offset":2}),justify="center",style={"margin-bottom":"20px"}),
+            
+            # Dropdown and Switch row
+            dbc.Row([
+                dbc.Col(
+                daq.BooleanSwitch(id="cummulation_switch",
+                            on=False,
+                            label="Kummulierte Emissionen",
+                            labelPosition="bottom"),width=3),
+                dbc.Col(
+                dcc.Dropdown(id="country_dd",
+                        options=dict_list_countries,
+                        multi=True),width=4)],
+                justify="center"),
+
+            # Emissions row  
+            dbc.Row(
+                dbc.Col([
+                dcc.Graph(id="fig_country_capita")
+                    ],width=10),justify="center",style={"margin-bottom":"20px"})
+    
+    
+                ])
+
+
+
+""" app.layout = html.Div(children=[
     
     # Header
     html.H1("Klimadashboard",
@@ -140,7 +200,7 @@ app.layout = html.Div(children=[
 
                 )
 
-        ])  # Close global div
+        ])  # Close global div """
                            
       
 @app.callback(
