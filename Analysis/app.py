@@ -108,8 +108,28 @@ app.layout = dbc.Container([
             dbc.Row(
                 dbc.Col([
                 dcc.Graph(id="fig_country_capita")
-                    ],width=10),justify="center",style={"margin-bottom":"20px"})
-    
+                    ],width=10),justify="center",style={"margin-bottom":"20px"}),
+
+            # Test thermometer row
+            dbc.Row(dbc.Col(children=[
+                        daq.Thermometer(
+                            id="thermometer",
+                            value=0.5,
+                            min=-0.5,
+                            max = 2,
+                            showCurrentValue=True,
+                            units="C",
+                            color="darkred",
+                            style = {"background-color":"lightgrey","color":"red"}),
+                        html.Div(dcc.Slider(id="time_slider",value=1970,min=1970,max=2021,
+                                marks={1970:{"label":"1970"},1995:{"label":"1995"},2021:{"label":"2021"}},
+                                tooltip={"placement": "bottom", "always_visible": True}))
+
+                            ],width=4,style={"background-color":"lightgrey"})
+                    ),
+            
+            # Test thermometer slider row
+            dbc.Row([])
     
                 ])
 
