@@ -36,13 +36,16 @@ fig_temp_bar["layout"].pop("updatemenus")
 #############
 
 # Import emission data per country
-emissions_country = pd.read_excel("/home/matthias/Python/Klimadashboard/Daten/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx",
-                                 sheet_name="fossil_CO2_totals_by_country").dropna()
-# Import emission data per capita
-emissions_capita = pd.read_excel("/home/matthias/Python/Klimadashboard/Daten/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx",
-                                 sheet_name="fossil_CO2_per_capita_by_countr",skipfooter=3).dropna()
+emissions_country = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_country.csv")
+#emissions_country = pd.read_excel("/home/matthias/Python/Klimadashboard/Daten/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx",
+#                                 sheet_name="fossil_CO2_totals_by_country").dropna()
 
-# Create inverted df for country emissions
+# Import emission data per capita
+emissions_capita = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_country.csv")
+#emissions_capita = pd.read_excel("/home/matthias/Python/Klimadashboard/Daten/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx",
+#                                 sheet_name="fossil_CO2_per_capita_by_countr",skipfooter=3).dropna()
+
+""" # Create inverted df for country emissions
 emissions_country_inverted = emissions_country.drop(emissions_country.tail(1).index).drop("Substance",axis=1).melt(id_vars=["Country","EDGAR Country Code"],var_name="year",value_name="emissions")
 # Create inverted df for per capita emissions
 emissions_capita_inverted = emissions_capita.drop(emissions_capita.tail(1).index).drop("Substance",axis=1).melt(id_vars=["EDGAR Country Code","Country"], var_name="year",value_name="emissions")
@@ -59,7 +62,9 @@ def calc_cumulated_emissions(row):
     cumulated_emissions = emissions_inverted_merged.loc[(emissions_inverted_merged["year"]<=year) & (emissions_inverted_merged["Country"]==country),"emissions_country"].sum()
     
     return cumulated_emissions
-emissions_inverted_merged["emissions_cumulated"] = emissions_inverted_merged.apply(calc_cumulated_emissions, axis=1)
+emissions_inverted_merged["emissions_cumulated"] = emissions_inverted_merged.apply(calc_cumulated_emissions, axis=1) """
+
+emissions_inverted_merged = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_inverted_merged.csv")
 
 # Create a dict list of all countries for the dropdown menu
 dict_list_countries = []
@@ -108,7 +113,7 @@ app.layout = html.Div(children=[
                             on=False,
                             label="Kummulierte Emissionen",
                             labelPosition="right",
-                            style={"width":"18%","margin":"auto",
+                            style={"width":"25%","margin":"auto",
                                 "display":"block"}
                             )
                     ),
@@ -117,7 +122,7 @@ app.layout = html.Div(children=[
                 dcc.Dropdown(id="country_dd",
                         options=dict_list_countries,
                         multi=True,
-                        style={"width":"38%","margin":"10px auto"}) 
+                        style={"width":"45%","margin":"10px auto"}) 
                     ), 
                        
 
@@ -180,16 +185,31 @@ def update_figure(selection,on):
             fig_country_capita.update_traces(marker_size=9)
             return fig_country_capita
 
-    # Make plot with all countries if there is no selection
-    fig_country_capita = px.scatter(data_frame=emissions,
-                             x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",template="seaborn",
-                            labels={"emissions_country": "CO2 Emissionen pro Land / Gt ", "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
-                            hover_data={"emissions_country":":.2f",
-                                        "emissions_capita":":.2f"})
-    fig_country_capita.update_layout(yaxis_range=[-1,12.5],xaxis_range=[-1,60])
-    fig_country_capita.update_traces(marker_size=8)
+    if on == True:
+        # Make plot with all countries if there is no selection
+        fig_country_capita = px.scatter(data_frame=emissions,
+                                x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",
+                                template="seaborn", size="emissions_cumulated",
+                                labels={"emissions_country": "CO2 Emissionen pro Land / Gt ",
+                                 "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
+                                hover_data={"emissions_country":":.2f",
+                                            "emissions_capita":":.2f"})
+        fig_country_capita.update_layout(yaxis_range=[-1,12.5],xaxis_range=[-1,60])
+        fig_country_capita.update_traces(marker_size=8)
+        
+        return fig_country_capita
     
-    return fig_country_capita
+    else:
+        # Make plot with all countries if there is no selection
+        fig_country_capita = px.scatter(data_frame=emissions,
+                                x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",template="seaborn",
+                                labels={"emissions_country": "CO2 Emissionen pro Land / Gt ", "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
+                                hover_data={"emissions_country":":.2f",
+                                            "emissions_capita":":.2f"})
+        fig_country_capita.update_layout(yaxis_range=[-1,12.5],xaxis_range=[-1,60])
+        fig_country_capita.update_traces(marker_size=8)
+        
+        return fig_country_capita
 
 
 if __name__=="__main__":
