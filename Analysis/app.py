@@ -6,6 +6,7 @@ import plotly.express as px
 import pandas as pd
 import dash_bootstrap_components as dbc
 import dash_daq as daq
+import datetime as dt
 
 
 
@@ -53,6 +54,31 @@ for country in emissions_inverted_merged["Country"].unique().tolist():
     this_dict["value"] = country
     dict_list_countries.append(this_dict)
 dict_list_countries
+
+# Yearly global co2 emissions
+global_total = emissions_country.loc[emissions_country["Country"]=="GLOBAL TOTAL",
+                                    "1970":].melt(var_name="year",value_name="total_emissions")
+global_total["year"] = global_total["year"].astype(int)
+
+# Calculate the average global co2 emissions between 2015 and 2021. Year 2020 will not be part of the average because the emissions 
+# where quite low due to the covid pandemic                                 
+global_avg_15_21 = global_total.loc[global_total["year"].isin([2015,2016,2017,2018,2019,2021]),"total_emissions"].mean()
+
+def year_global_total_emissions(year):
+    return global_total.loc[global_total["year"]==year,"total_emissions"].item()
+
+# Emissions of 2020 and 2021
+emissions_20_21 = (year_global_total_emissions(2020) + year_global_total_emissions(2021))
+
+# Emissions since january 2022
+average_global_co2_per_second = global_avg_15_21/365/24/60/60 * 1000000000  #value in t/s
+time_since_jan22 = dt.datetime.now() - dt.datetime(2022,1,1)  #Time difference between jan 2020 and now
+used_since_jan_22 = time_since_jan22.total_seconds() * average_global_co2_per_second  /1000000000 #Used co2 budget since jan2020 in Gt
+
+# Remaining co2 budget
+remaining_budget = 400 - emissions_20_21/1000 - used_since_jan_22/1000    #Remaining co2 budget in Gt
+print(remaining_budget)
+
 
 # Create dash app
 app = dash.Dash(external_stylesheets=[dbc.themes.MATERIA])
@@ -134,7 +160,28 @@ app.layout = dbc.Container([
                     ],width=10),justify="center",style={"margin-bottom":"20px","border":"5px solid green"}),
 
            
-    
+            # Gaute row
+            dbc.Row(
+                dbc.Col([
+                        daq.Gauge( 
+                            id = "gauge",
+                            color={"gradient":True,"ranges":{"green":[0,133],"yellow":[133,266],"red":[266,400]}},
+                            value=300,
+                            max=400,
+                            min=0,
+                            scale={'custom':{'0':{'label':'0', 'style':{'font-size':'20px'}},
+                                            '100':{'label':'100', 'style':{'font-size':'20px'}},
+                                            '200':{'label':'200', 'style':{'font-size':'20px'}},
+                                            '300':{'label':'300', 'style':{'font-size':'20px'}},
+                                            '400':{'label':'400', 'style':{'font-size':'20px'}},
+                                            }
+                                    },                            
+                                )
+                        ],width=4),justify="center"
+
+                    )
+
+
                 ]) #close dbc container
 
       
