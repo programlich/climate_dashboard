@@ -77,8 +77,14 @@ used_since_jan_22 = time_since_jan22.total_seconds() * average_global_co2_per_se
 
 # Remaining co2 budget
 remaining_budget = 400 - emissions_20_21/1000 - used_since_jan_22/1000    #Remaining co2 budget in Gt
-print(remaining_budget)
 
+
+
+
+
+############
+# DASH APP #
+############
 
 # Create dash app
 app = dash.Dash(external_stylesheets=[dbc.themes.MATERIA])
@@ -184,7 +190,12 @@ app.layout = dbc.Container([
 
                 ]) #close dbc container
 
-      
+# Callback for gauge
+@app.callback()
+
+def update_gauge(now, time)
+
+
 @app.callback(
     Output(component_id="fig_country_capita",component_property="figure"),
     Input(component_id="country_dd",component_property="value"),
