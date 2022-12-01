@@ -55,17 +55,17 @@ for country in emissions_inverted_merged["Country"].unique().tolist():
 dict_list_countries
 
 # Create dash app
-app = dash.Dash(external_stylesheets=[dbc.themes.SUPERHERO])
+app = dash.Dash(external_stylesheets=[dbc.themes.MATERIA])
 
 
 app.layout = dbc.Container([
             
-            # Header row
+            # Title row
             dbc.Row(
                 dbc.Col(html.H1("Klimadashboard"),width={"size":6,"offset":3}),
                 justify="center",style={"margin-bottom":"40px","margin-top":"20px"}),
             
-            # Header row first graphs
+            # Header row temperature graphs
             dbc.Row(
                 dbc.Col(html.H2("Änderung der globalen Oberflächentemperatur relativ zum Zeitraum 1850-1900",style={"text-align":"center"}),
                 width={"size":10,"offset":1},align="center"),
@@ -79,13 +79,35 @@ app.layout = dbc.Container([
                 #Temp line graph
                 dcc.Graph(figure=fig_temp_line)
                         ], width=7),
-            
-                dbc.Col([
-                        dcc.Graph(figure=fig_temp_bar)
-                        ],width=3)
+
+                # Thermometer
+                dbc.Col(children=[
+                        # Uncomment the following line to switch back to plotly barchart
+                        # dcc.Graph(figure=fig_temp_bar) 
+                        daq.Thermometer(id="thermometer",
+                                value=0.5,
+                                min=-0.5,
+                                max = 2,
+                                showCurrentValue=True,
+                                units="C",
+                                color="darkred",
+                                style = {"background-color":"white","color":"red",
+                                        "margin-top":"5%"}),
+                        html.Div(dcc.Slider(id="time_slider",value=1850,min=1850,max=2019,
+                                marks={ 1850:{"label":"1850","style":{"font-size":"20px"}},
+                                        1900:{"label":"1900","style":{"font-size":"20px"}},
+                                        1950:{"label":"1950","style":{"font-size":"20px"}},
+                                        2000:{"label":"2000","style":{"font-size":"20px"}}
+                                    },
+                                tooltip={"placement": "top", "always_visible": True},updatemode="drag"), #close slider
+
+                                style={"margin-bottom":"5%"})
+
+                                    ], # close children of thermometer col
+                                width=3,style={"background-color":"white"})
 
 
-                    ],align="end",justify="center",style={"margin-bottom":"30px"}), # Close first row
+                    ],align="end",justify="center",style={"margin-bottom":"30px","border":"5px solid green"}), # Close first row
        
             # Second header row
             dbc.Row(dbc.Col(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger"),
@@ -96,6 +118,7 @@ app.layout = dbc.Container([
                 dbc.Col(
                 daq.BooleanSwitch(id="cummulation_switch",
                             on=False,
+                            color="blue",
                             label="Kummulierte Emissionen",
                             labelPosition="bottom"),width=3),
                 dbc.Col(
@@ -108,30 +131,11 @@ app.layout = dbc.Container([
             dbc.Row(
                 dbc.Col([
                 dcc.Graph(id="fig_country_capita")
-                    ],width=10),justify="center",style={"margin-bottom":"20px"}),
+                    ],width=10),justify="center",style={"margin-bottom":"20px","border":"5px solid green"}),
 
-            # Test thermometer row
-            dbc.Row(dbc.Col(children=[
-                        daq.Thermometer(
-                            id="thermometer",
-                            value=0.5,
-                            min=-0.5,
-                            max = 2,
-                            showCurrentValue=True,
-                            units="C",
-                            color="darkred",
-                            style = {"background-color":"lightgrey","color":"red"}),
-                        html.Div(dcc.Slider(id="time_slider",value=1970,min=1970,max=2021,
-                                marks={1970:{"label":"1970"},1995:{"label":"1995"},2021:{"label":"2021"}},
-                                tooltip={"placement": "bottom", "always_visible": True}))
-
-                            ],width=4,style={"background-color":"lightgrey"})
-                    ),
-            
-            # Test thermometer slider row
-            dbc.Row([])
+           
     
-                ])
+                ]) #close dbc container
 
       
 @app.callback(
@@ -202,6 +206,19 @@ def update_figure(selection,on):
         
         return fig_country_capita
 
+# Callback for the thermometer showing temperature rais in one year
+@app.callback(Output(component_id="thermometer",component_property="value"),
+              Input(component_id="time_slider",component_property="value"))
+
+def update_thermometer(year):
+    
+    temp_recent_copy = temp_recent.copy(deep=True)
+    
+    if year:  
+        temp = temp_recent_copy.loc[temp_recent_copy["year"]==year,"observed"].item()
+        return temp
+    
+    
 
 if __name__=="__main__":
     app.run_server(debug=True)
