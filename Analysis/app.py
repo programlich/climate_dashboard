@@ -10,7 +10,9 @@ import datetime as dt
 import plotly.graph_objects as go
 import os
 from dash_bootstrap_templates import load_figure_template
+import locale
 
+locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
 dbc_css = os.path.abspath("assets/dbc.min.css")
 template = "superhero"
 
@@ -186,16 +188,24 @@ app.layout = dbc.Container([
 
                         html.H3(id="month_budget",style={"textAlign":"center"}),
 
-                        html.Div(dcc.Slider(id="gauge_slider",value=24,min=0,max=179,
-                                marks={ 0:{"label":"2020","style":{"font-size":"20px"}},
-                                        59:{"label":"2025","style":{"font-size":"20px"}},
-                                        119:{"label":"2030","style":{"font-size":"20px"}},
-                                        179:{"label":"2035","style":{"font-size":"20px"}}
+                   
+                        html.Div(dcc.Slider(id="gauge_slider",min=1,max=180,
+                                marks={ 1:{"label":"2020","style":{"font-size":"20px"}},
+                                        60:{"label":"2025","style":{"font-size":"20px"}},
+                                        120:{"label":"2030","style":{"font-size":"20px"}},
+                                        180:{"label":"2035","style":{"font-size":"20px"}}
                                     },
                                         updatemode="drag"), #close slider
 
-                                style={"margin-bottom":"5%"}) #close slider Div
-                        
+                                style={"margin-bottom":"0%"}), #close slider Div
+                            
+                        html.Div(
+                            dbc.Button("Heute",outline=True,color="danger",id="button_today",n_clicks=0),
+                            style={"textAlign":"center","margin-bottom":"5%"}
+                        )
+                            
+                            
+
                         ],width=12),justify="center"
 
                     )
@@ -203,19 +213,43 @@ app.layout = dbc.Container([
 
                 ],className="dbc") #close dbc container
 
-# Callback for gauge
-@app.callback(Output(component_id="fig_emissions_gauge", component_property="figure"),
-              Output(component_id="month_budget",component_property="children"),
-              Input(component_id="gauge_slider",component_property="value"))
 
-def update_gauge(emission_index):
+# Callback for gauge
+@app.callback(Output(component_id="fig_emissions_gauge", component_property="figure"),  # gauge figure
+              Output(component_id="month_budget",component_property="children"),        # selected month and year
+              Output(component_id="button_today",component_property="n_clicks"),        # click output -> set to 0
+              Output(component_id="gauge_slider",component_property="value"),           # position on slider
+              Input(component_id="gauge_slider",component_property="value"),            # slider input
+              Input(component_id="button_today",component_property="n_clicks"))         # click input 
+
+def update_gauge(slider,today_click):
+
+    budget_copy = budget.copy(deep=True)    #create copy of the data
+    budget_copy.index += 1  #Increas index by one to make slider work correctly
+    # Get todays month and year
+    today_year = dt.datetime.now().year
+    today_month = dt.datetime.now().strftime("%B")
+
+    # Case 0: Initial state
+    this_budget = budget_copy.loc[(budget_copy["year"]==today_year) & (budget_copy["month"]==today_month),"remaining"].item()
+    date = f"{today_month} {today_year}"
+    slider_value = budget_copy.loc[(budget_copy["year"]==today_year) & (budget_copy["month"]==today_month),"remaining"].index[0]
     
-    budget_copy = budget.copy(deep=True)
-        
-    this_budget = budget_copy.loc[emission_index, "remaining"]
-    this_month = budget_copy.loc[emission_index,"month"]
-    this_year = budget_copy.loc[emission_index,"year"]
-    date = f"{this_month} {this_year}"
+    # Case 1: Slider moved
+    if slider:
+        this_budget = budget_copy.loc[slider, "remaining"]
+        this_month = budget_copy.loc[slider,"month"]
+        this_year = budget_copy.loc[slider,"year"]
+        date = f"{this_month} {this_year}"
+        slider_value = slider
+    
+    # Case 2: Button clicked
+    if today_click:
+        this_budget = budget_copy.loc[(budget_copy["year"]==today_year) & (budget_copy["month"]==today_month),"remaining"].item()
+        date = f"{today_month} {today_year}"
+        slider_value = budget_copy.loc[(budget_copy["year"]==today_year) & (budget_copy["month"]==today_month),"remaining"].index[0]
+    
+    # Create the gauge
     gauge = go.Figure(go.Indicator(
     mode = "gauge+number",
     value = this_budget,
@@ -232,7 +266,12 @@ def update_gauge(emission_index):
   
     gauge.update_layout(paper_bgcolor = "#0f2537", font = {'color': "#ebebeb", 'family': "Arial"})
     gauge.update_traces(gauge_axis_tickfont_size=20)
-    return gauge,date
+    
+    n_clicks = None #Set n_clicks back to 0 so it doesnt increment forever
+    
+    return gauge,date,n_clicks,slider_value
+
+
 
 @app.callback(
     Output(component_id="fig_country_capita",component_property="figure"),
