@@ -1,13 +1,20 @@
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 from dash.dependencies import Input, Output
 import plotly.express as px
 import pandas as pd
 import dash_bootstrap_components as dbc
 import dash_daq as daq
 import datetime as dt
+import plotly.graph_objects as go
+import os
+from dash_bootstrap_templates import load_figure_template
 
+dbc_css = os.path.abspath("assets/dbc.min.css")
+template = "superhero"
+
+load_figure_template(template)
 
 
 ###############################
@@ -22,7 +29,7 @@ temp_recent["dummy_data"] = 1
 # linechart figure for recent temperature changes
 fig_temp_line = px.line(data_frame=temp_recent, x="year", y="observed",
  labels={"year":"Jahr","observed":"Temperaturänderung / °C"},
-  width=800, template="seaborn")
+  width=800, template=template)
 fig_temp_line.update_layout(xaxis_range=[1850,2023],yaxis_range=[-0.5,1.5])
 
 # Barchart figure showing temperatur change in one selected year
@@ -79,7 +86,10 @@ used_since_jan_22 = time_since_jan22.total_seconds() * average_global_co2_per_se
 remaining_budget = 400 - emissions_20_21/1000 - used_since_jan_22/1000    #Remaining co2 budget in Gt
 
 
-
+##########
+# Budget
+##########
+budget = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_gauge.csv")
 
 
 ############
@@ -87,7 +97,7 @@ remaining_budget = 400 - emissions_20_21/1000 - used_since_jan_22/1000    #Remai
 ############
 
 # Create dash app
-app = dash.Dash(external_stylesheets=[dbc.themes.MATERIA])
+app = dash.Dash(external_stylesheets=[dbc.themes.SUPERHERO,dbc_css])
 
 
 app.layout = dbc.Container([
@@ -123,7 +133,7 @@ app.layout = dbc.Container([
                                 showCurrentValue=True,
                                 units="C",
                                 color="darkred",
-                                style = {"background-color":"white","color":"red",
+                                style = {"background-color":"white",
                                         "margin-top":"5%"}),
                         html.Div(dcc.Slider(id="time_slider",value=1850,min=1850,max=2019,
                                 marks={ 1850:{"label":"1850","style":{"font-size":"20px"}},
@@ -136,7 +146,7 @@ app.layout = dbc.Container([
                                 style={"margin-bottom":"5%"})
 
                                     ], # close children of thermometer col
-                                width=3,style={"background-color":"white"})
+                                width=3)
 
 
                     ],align="end",justify="center",style={"margin-bottom":"30px","border":"5px solid green"}), # Close first row
@@ -148,16 +158,17 @@ app.layout = dbc.Container([
             # Dropdown and Switch row
             dbc.Row([
                 dbc.Col(
-                daq.BooleanSwitch(id="cummulation_switch",
-                            on=False,
-                            color="blue",
+                dbc.Switch(id="cummulation_switch",
+                            value=False,
+                            
                             label="Kummulierte Emissionen",
-                            labelPosition="bottom"),width=3),
+                            #labelPosition="bottom"
+                            ),width=3),
                 dbc.Col(
                 dcc.Dropdown(id="country_dd",
                         options=dict_list_countries,
                         multi=True),width=4)],
-                justify="center"),
+                justify="center",style={"margin-bottom":"10px"}),
 
             # Emissions row  
             dbc.Row(
@@ -166,40 +177,67 @@ app.layout = dbc.Container([
                     ],width=10),justify="center",style={"margin-bottom":"20px","border":"5px solid green"}),
 
            
-            # Gaute row
+            # Gauge row
             dbc.Row(
                 dbc.Col([
-                        daq.Gauge( 
-                            id = "gauge",
-                            color={"gradient":True,"ranges":{"green":[0,133],"yellow":[133,266],"red":[266,400]}},
-                            value=300,
-                            max=400,
-                            min=0,
-                            scale={'custom':{'0':{'label':'0', 'style':{'font-size':'20px'}},
-                                            '100':{'label':'100', 'style':{'font-size':'20px'}},
-                                            '200':{'label':'200', 'style':{'font-size':'20px'}},
-                                            '300':{'label':'300', 'style':{'font-size':'20px'}},
-                                            '400':{'label':'400', 'style':{'font-size':'20px'}},
-                                            }
-                                    },                            
-                                )
-                        ],width=4),justify="center"
+                        html.H2("CO2 Budget / Gt",style={"textAlign":"center"}),
+
+                        dcc.Graph(id="fig_emissions_gauge"),
+
+                        html.H3(id="month_budget",style={"textAlign":"center"}),
+
+                        html.Div(dcc.Slider(id="gauge_slider",value=24,min=0,max=179,
+                                marks={ 0:{"label":"2020","style":{"font-size":"20px"}},
+                                        59:{"label":"2025","style":{"font-size":"20px"}},
+                                        119:{"label":"2030","style":{"font-size":"20px"}},
+                                        179:{"label":"2035","style":{"font-size":"20px"}}
+                                    },
+                                        updatemode="drag"), #close slider
+
+                                style={"margin-bottom":"5%"}) #close slider Div
+                        
+                        ],width=12),justify="center"
 
                     )
 
 
-                ]) #close dbc container
+                ],className="dbc") #close dbc container
 
 # Callback for gauge
-@app.callback()
+@app.callback(Output(component_id="fig_emissions_gauge", component_property="figure"),
+              Output(component_id="month_budget",component_property="children"),
+              Input(component_id="gauge_slider",component_property="value"))
 
-def update_gauge(now, time)
-
+def update_gauge(emission_index):
+    
+    budget_copy = budget.copy(deep=True)
+        
+    this_budget = budget_copy.loc[emission_index, "remaining"]
+    this_month = budget_copy.loc[emission_index,"month"]
+    this_year = budget_copy.loc[emission_index,"year"]
+    date = f"{this_month} {this_year}"
+    gauge = go.Figure(go.Indicator(
+    mode = "gauge+number",
+    value = this_budget,
+    domain = {'x': [0, 1], 'y': [0, 1]},
+    
+    gauge = {'axis': {'range': [None, 400]},
+            'borderwidth': 4,
+            'bordercolor': "darkgray",
+            'steps' : [
+                {'range': [0, 200], 'color': "#ebebeb"},
+                {'range': [200, 400], 'color': "#ebebeb"}],
+                'bar': {'color': "darkred"},}
+    ))
+  
+    gauge.update_layout(paper_bgcolor = "#0f2537", font = {'color': "#ebebeb", 'family': "Arial"})
+    gauge.update_traces(gauge_axis_tickfont_size=20)
+    return gauge,date
 
 @app.callback(
     Output(component_id="fig_country_capita",component_property="figure"),
     Input(component_id="country_dd",component_property="value"),
-    Input(component_id="cummulation_switch",component_property="on")
+    Input(component_id="cummulation_switch",component_property="value")
 )
 def update_figure(selection,on):
 
@@ -218,7 +256,7 @@ def update_figure(selection,on):
             fig_country_capita = px.scatter(data_frame=emissions,
                                 x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",color="Country", size="emissions_cumulated", 
                                 labels={"emissions_country": "CO2 Emissionen pro Land / Gt ", "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr ",
-                                "emissions_cumulated":"Kummulierte Emissionen seit 1970 / Gt"}, template="seaborn",
+                                "emissions_cumulated":"Kummulierte Emissionen seit 1970 / Gt"}, template=template,
                                 hover_data={"emissions_cumulated":":.2f",
                                             "emissions_country":":.2f",
                                             "emissions_capita":":.2f"})
@@ -231,7 +269,7 @@ def update_figure(selection,on):
             fig_country_capita = px.scatter(data_frame=emissions,
                                 x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",color="Country", 
                                 labels={"emissions_country": "CO2 Emissionen pro Land / Gt ", "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
-                                 template="seaborn",
+                                 template=template,
                                 hover_data={"emissions_country":":.2f",
                                             "emissions_capita":":.2f"})
             fig_country_capita.update_layout(yaxis_range=[-1,12.5],xaxis_range=[-1,60])
@@ -242,7 +280,7 @@ def update_figure(selection,on):
         # Make plot with all countries if there is no selection
         fig_country_capita = px.scatter(data_frame=emissions,
                                 x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",
-                                template="seaborn", size="emissions_cumulated",
+                                template=template, size="emissions_cumulated",
                                 labels={"emissions_country": "CO2 Emissionen pro Land / Gt ",
                                  "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
                                 hover_data={"emissions_country":":.2f",
@@ -255,7 +293,7 @@ def update_figure(selection,on):
     else:
         # Make plot with all countries if there is no selection
         fig_country_capita = px.scatter(data_frame=emissions,
-                                x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",template="seaborn",
+                                x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",template=template,
                                 labels={"emissions_country": "CO2 Emissionen pro Land / Gt ", "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
                                 hover_data={"emissions_country":":.2f",
                                             "emissions_capita":":.2f"})
