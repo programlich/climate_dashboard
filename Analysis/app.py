@@ -1,7 +1,7 @@
 import dash
 from dash import dcc
 from dash import html
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 import plotly.express as px
 import pandas as pd
 import dash_bootstrap_components as dbc
@@ -11,6 +11,8 @@ import plotly.graph_objects as go
 import os
 from dash_bootstrap_templates import load_figure_template
 import locale
+
+from components import ssp_checklist, ssp_modal
 
 locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
 dbc_css = os.path.abspath("assets/dbc.min.css")
@@ -93,6 +95,11 @@ remaining_budget = 400 - emissions_20_21/1000 - used_since_jan_22/1000    #Remai
 ##########
 budget = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_gauge.csv")
 
+#####################
+# CO2 concentration #
+#####################
+concentration = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/co2_concentration_total.csv")
+
 
 ############
 # DASH APP #
@@ -109,6 +116,74 @@ app.layout = dbc.Container([
                 dbc.Col(html.H1("Klimadashboard"),width={"size":6,"offset":3}),
                 justify="center",style={"margin-bottom":"40px","margin-top":"20px"}),
             
+
+            # concentration and budget row
+            dbc.Row([
+                dbc.Col([
+                    html.H2("CO2 Konzentration in der Atmosphäre"),
+                    dcc.Graph(id="fig_concentration")
+                ], width=6), #close fig col
+
+                dbc.Col([
+                    html.Br(),
+                    html.Br(),
+                     ssp_checklist, #Select certain ssp data
+                     ssp_modal      #Explenation on ssp 
+                     
+                ], width=1),
+                dbc.Col([
+                        html.H2("CO2 Budget / Gt",style={"textAlign":"center"}),
+                        dcc.Graph(id="fig_emissions_gauge"),
+                        html.H3(id="month_budget",style={"textAlign":"center"}),
+
+                   
+                        html.Div(dcc.Slider(id="gauge_slider",min=1,max=180,
+                                marks={ 1:{"label":"2020","style":{"font-size":"20px"}},
+                                        60:{"label":"2025","style":{"font-size":"20px"}},
+                                        120:{"label":"2030","style":{"font-size":"20px"}},
+                                        180:{"label":"2035","style":{"font-size":"20px"}}
+                                    },
+                                        updatemode="drag"), #close slider
+
+                                style={"margin-bottom":"0%"}), #close slider Div
+                            
+                        html.Div(
+                            dbc.Button("Heute",outline=True,color="danger",id="button_today",n_clicks=0),
+                            style={"textAlign":"center","margin-bottom":"5%"}
+                        )
+                            
+                            
+
+                        ],width=5)
+
+            ],style={"margin-bottom":"20px"}), #close concentration row
+
+            # Second header row
+            dbc.Row(dbc.Col(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger"),
+                    width={"size":8,"offset":2}),justify="center",style={"margin-bottom":"20px"}),
+            
+            # Dropdown and Switch row
+            dbc.Row([
+                dbc.Col(
+                dbc.Switch(id="cummulation_switch",
+                            value=False,
+                            
+                            label="Kummulierte Emissionen",
+                            #labelPosition="bottom"
+                            ),width=3),
+                dbc.Col(
+                dcc.Dropdown(id="country_dd",
+                        options=dict_list_countries,
+                        multi=True),width=4)],
+                justify="center",style={"margin-bottom":"10px"}),
+
+            # Emissions row  
+            dbc.Row(
+                dbc.Col([
+                dcc.Graph(id="fig_country_capita")
+                    ],width=10),justify="center",style={"margin-bottom":"20px"}),
+
+
             # Header row temperature graphs
             dbc.Row(
                 dbc.Col(html.H2("Änderung der globalen Oberflächentemperatur relativ zum Zeitraum 1850-1900",style={"text-align":"center"}),
@@ -151,67 +226,56 @@ app.layout = dbc.Container([
                                 width=3)
 
 
-                    ],align="end",justify="center",style={"margin-bottom":"30px","border":"5px solid green"}), # Close first row
+                    ],align="end",justify="center",style={"margin-bottom":"30px"}), # Close first row
        
-            # Second header row
-            dbc.Row(dbc.Col(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger"),
-                    width={"size":8,"offset":2}),justify="center",style={"margin-bottom":"20px"}),
-            
-            # Dropdown and Switch row
-            dbc.Row([
-                dbc.Col(
-                dbc.Switch(id="cummulation_switch",
-                            value=False,
-                            
-                            label="Kummulierte Emissionen",
-                            #labelPosition="bottom"
-                            ),width=3),
-                dbc.Col(
-                dcc.Dropdown(id="country_dd",
-                        options=dict_list_countries,
-                        multi=True),width=4)],
-                justify="center",style={"margin-bottom":"10px"}),
-
-            # Emissions row  
-            dbc.Row(
-                dbc.Col([
-                dcc.Graph(id="fig_country_capita")
-                    ],width=10),justify="center",style={"margin-bottom":"20px","border":"5px solid green"}),
 
            
-            # Gauge row
-            dbc.Row(
-                dbc.Col([
-                        html.H2("CO2 Budget / Gt",style={"textAlign":"center"}),
+          
 
-                        dcc.Graph(id="fig_emissions_gauge"),
-
-                        html.H3(id="month_budget",style={"textAlign":"center"}),
-
-                   
-                        html.Div(dcc.Slider(id="gauge_slider",min=1,max=180,
-                                marks={ 1:{"label":"2020","style":{"font-size":"20px"}},
-                                        60:{"label":"2025","style":{"font-size":"20px"}},
-                                        120:{"label":"2030","style":{"font-size":"20px"}},
-                                        180:{"label":"2035","style":{"font-size":"20px"}}
-                                    },
-                                        updatemode="drag"), #close slider
-
-                                style={"margin-bottom":"0%"}), #close slider Div
-                            
-                        html.Div(
-                            dbc.Button("Heute",outline=True,color="danger",id="button_today",n_clicks=0),
-                            style={"textAlign":"center","margin-bottom":"5%"}
-                        )
-                            
-                            
-
-                        ],width=12),justify="center"
-
-                    )
-
-
+            
                 ],className="dbc") #close dbc container
+
+# Callback for CO2 concentration
+@app.callback(Output(component_id="fig_concentration",component_property="figure"),
+              Input(component_id="ssp_checklist",component_property="value")
+)
+
+def checklist(checked):
+    concentration_copy = concentration.copy(deep=True)
+    
+    show_list = ["gemessen"] + checked  #Select all lines to be shown
+
+    # Select all the corresponding colors to the selected data
+    color_dict = {"value":["gemessen","ssp119",'ssp126','ssp245','ssp370','ssp585'],
+            "color":["red","blue","green","yellow","grey","darkred"]}
+    color_df = pd.DataFrame(color_dict)
+    color_list = color_df.loc[color_df["value"].isin(show_list),"color"].tolist()
+
+    # Create line chart 
+    fig = px.line(data_frame=concentration_copy,x="year",y=show_list, color_discrete_sequence=color_list,
+                 labels={"value":"CO2 Konzentration / ppm","year":"Jahr","variable":""})
+    fig.update_traces(hovertemplate=None)
+    
+    if "ssp370" in checked or "ssp585" in checked:
+        fig.update_layout(hovermode="x",yaxis_range=[250,1200])
+    else:
+        fig.update_layout(hovermode="x",yaxis_range=[250,650])
+
+    return fig
+
+# Callback for the modal giving information about the ssps
+@app.callback(
+    Output(component_id="ssp_modal", component_property="is_open"),
+    [Input(component_id="open_ssp_modal", component_property="n_clicks"),
+    Input(component_id="close_ssp_modal", component_property="n_clicks")],
+    State(component_id="ssp_modal",component_property="is_open")
+)
+
+def toggle_modal(click_open, click_close, is_open):
+    if click_open or click_close:
+        return not is_open
+    return is_open
+
 
 
 # Callback for gauge
@@ -264,8 +328,9 @@ def update_gauge(slider,today_click):
                 'bar': {'color': "darkred"},}
     ))
   
-    gauge.update_layout(paper_bgcolor = "#0f2537", font = {'color': "#ebebeb", 'family': "Arial"})
-    gauge.update_traces(gauge_axis_tickfont_size=20)
+    gauge.update_layout(paper_bgcolor = "#0f2537", font = {'color': "#ebebeb", 'family': "Arial"})#,margin=dict(l=0, r=0, t=0, b=0))#,width=500,height=300)
+    gauge.update_traces(gauge_axis_tickfont_size=15)
+
     
     n_clicks = None #Set n_clicks back to 0 so it doesnt increment forever
     
