@@ -79,14 +79,14 @@ def create_emission_tabs(dict_list_countries):
                     outline=False,color="#0f2537",inverse=True)
 
     top_dd_list = []
-    for i in range(1,181):
+    for i in range(1,209):
         this_dict = {}
         this_dict["label"] = str(i)
         this_dict["value"] = i
         top_dd_list.append(this_dict)
 
     year_dd_list = []
-    for i in range(1850,2021):
+    for i in range(1970,2022):
         this_dict = {}
         this_dict["label"] = str(i)
         this_dict["value"] = i
