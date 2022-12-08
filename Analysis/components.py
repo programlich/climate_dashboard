@@ -1,5 +1,6 @@
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
+
 
 
 ssp_checklist = html.Div(
@@ -51,3 +52,51 @@ ssp_modal = html.Div(
 
 
 
+def create_emission_tabs(dict_list_countries):
+    tab_emission = dbc.Card(dbc.CardBody(
+                dbc.Row([
+                    
+                        dbc.Col([
+                        dcc.Graph(id="fig_country_capita")
+                                ],width=10), #close figure col
+                
+                        dbc.Col([
+                        dbc.Switch( id="cummulation_switch",
+                                value=False,
+                                label="Kummulierte Emissionen",
+                                style={"margin-bottom":"10px"}),
+                    
+                        dcc.Dropdown(id="country_dd",
+                                 options=dict_list_countries,
+                                 multi=True)
+
+                        ],width=2) #close menu col    
+                        ],style={"margin-bottom":"0%"})),outline=False,color="#0f2537",inverse=True)
+
+    tab_emission_toplist =  dbc.Card(
+                dbc.CardBody(dbc.Row([
+                    dbc.Col([
+                    dcc.Graph(id="lfig_country_capita")
+                    ],width=10), #close figure col
+                
+                dbc.Col([
+                    dbc.Switch( id="lcummulation_switch",
+                                value=False,
+                                label="Kummulierte Emissionen",
+                                style={"margin-bottom":"10px"}),
+                    
+                    dcc.Dropdown(id="lcountry_dd",
+                                 options=dict_list_countries,
+                                 multi=True)
+
+                    ],width=2) #close menu col    
+                ],style={"margin-bottom":"0%"}))) 
+
+    tabs = dbc.Tabs(
+    [
+        dbc.Tab(tab_emission, label="Emissionen"),
+        dbc.Tab(tab_emission_toplist, label="Rangliste"),
+        
+    ]
+        )
+    return tabs

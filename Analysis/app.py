@@ -12,7 +12,7 @@ import os
 from dash_bootstrap_templates import load_figure_template
 import locale
 
-from components import ssp_checklist, ssp_modal
+from components import ssp_checklist, ssp_modal, create_emission_tabs
 
 locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
 dbc_css = os.path.abspath("assets/dbc.min.css")
@@ -64,7 +64,7 @@ for country in emissions_inverted_merged["Country"].unique().tolist():
     this_dict["label"] = country
     this_dict["value"] = country
     dict_list_countries.append(this_dict)
-dict_list_countries
+
 
 # Yearly global co2 emissions
 global_total = emissions_country.loc[emissions_country["Country"]=="GLOBAL TOTAL",
@@ -119,20 +119,40 @@ app.layout = dbc.Container([
 
             # concentration and budget row
             dbc.Row([
-                dbc.Col([
-                    html.H2("CO2 Konzentration in der Atmosphäre",style={"textAlign":"center"}),
-                    dcc.Graph(id="fig_concentration")
-                ], width=6), #close fig col
+            
+            # Concentration Column
+            dbc.Col(
+                # Header
+                html.Div([dbc.CardHeader(html.H2("CO2 Konzentration in der Atmosphäre",style={"textAlign":"center"})),
+                # Content row
+                dbc.Row([
+                    # Figure col    
+                    dbc.Col([
+                        dcc.Graph(id="fig_concentration")
+                        ], width=10), #close figure col
+                    
+                    # Menu col               
+                    dbc.Col([
+                        html.Br(),
+                        html.Br(),
+                        ssp_checklist, #Select certain ssp data
+                        ssp_modal      #Explenation on ssp     
+                        ], width=2), #close menu col
 
+                        ]) #close content row
+                    
+                    ],style={"border":"0.8px white solid",
+                            "margin-bottom":"5%",
+                            "border-radius":10,
+                            'padding':'0px 0px 8px 0px',
+                            "height":"95%"}), #close styling Div
+                width=8), #close concentration col
+
+
+                # Budget col
                 dbc.Col([
-                    html.Br(),
-                    html.Br(),
-                     ssp_checklist, #Select certain ssp data
-                     ssp_modal      #Explenation on ssp 
-                     
-                ], width=1),
-                dbc.Col([
-                        html.H2("CO2 Budget / Gt",style={"textAlign":"center"}),
+                        html.Div([
+                        dbc.CardHeader(html.H2("CO2 Budget / Gt",style={"textAlign":"center"})),
                         html.Br(),
                         html.Div([
                                 daq.Gauge(id ="fig_emissions_gauge",
@@ -153,50 +173,47 @@ app.layout = dbc.Container([
                                     },
                                         updatemode="drag"), #close slider
 
-                                style={"margin-bottom":"5%"}), #close slider Div
+                                style={ "margin-bottom":"5%",
+                                        "margin-right":"2%",
+                                        "margin-left":"2%"}), #close slider Div
                             
                         html.Div(
                             dbc.Button("Heute",outline=True,color="danger",id="button_today",n_clicks=0),
                             style={"textAlign":"center","margin-bottom":"5%",}
                         )
          
-                        ],width=4)
+                        ],style={"border":"0.8px white solid",
+                                "margin-bottom":"5%",
+                                "border-radius":10,
+                                'padding':'0px 0px 8px 0px',
+                                "height":"95%"})],width={"size":4,"offset":0})
 
             ],style={"margin-bottom":"20px"}), #close concentration row
 
             # Second header row
-            dbc.Row(dbc.Col(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger"),
-                    width={"size":8,"offset":2}),justify="center",style={"margin-bottom":"20px"}),
+            #dbc.Row(dbc.Col(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger"),
+            #        width={"size":8,"offset":2}),justify="center",style={"margin-bottom":"20px"}),
             
             # Dropdown and Switch row
-            dbc.Row([
-                dbc.Col(
-                dbc.Switch(id="cummulation_switch",
-                            value=False,
-                            
-                            label="Kummulierte Emissionen",
-                            #labelPosition="bottom"
-                            ),width=3),
-                dbc.Col(
-                dcc.Dropdown(id="country_dd",
-                        options=dict_list_countries,
-                        multi=True),width=4)],
-                justify="center",style={"margin-bottom":"10px"}),
+  
 
             # Emissions row  
-            dbc.Row(
-                dbc.Col([
-                dcc.Graph(id="fig_country_capita")
-                    ],width=10),justify="center",style={"margin-bottom":"20px"}),
+            html.Div([
+                dbc.CardHeader(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger",
+                                style={"textAlign":"center"})),
+                dbc.CardBody(create_emission_tabs(dict_list_countries),
+                            )
+                    ],style={"border":"0.8px white solid","margin-bottom":"5%","border-radius":10}),
 
 
             # Header row temperature graphs
             dbc.Row(
-                dbc.Col(html.H2("Änderung der globalen Oberflächentemperatur relativ zum Zeitraum 1850-1900",style={"text-align":"center"}),
+                dbc.Col(html.H2("Änderung der globalen Oberflächentemperatur relativ zum Zeitraum 1850-1900",
+                style={"text-align":"center"}),
                 width={"size":10,"offset":1},align="center"),
                 justify="center"),
 
-            # First row
+            # Temperature row
             dbc.Row([
                 # First col
                 dbc.Col([
@@ -246,7 +263,7 @@ app.layout = dbc.Container([
               Input(component_id="ssp_checklist",component_property="value")
 )
 
-def checklist(checked):
+def plot_concentration(checked):
     concentration_copy = concentration.copy(deep=True)
     
     show_list = ["gemessen"] + checked  #Select all lines to be shown
@@ -263,7 +280,7 @@ def checklist(checked):
     fig = px.line(data_frame=concentration_copy,x="year",y=show_list, color_discrete_sequence=color_list,
                  labels={"value":"CO2 Konzentration / ppm","year":"Jahr","variable":""})
     fig.update_traces(hovertemplate=None)
-    
+    fig.update_layout(font_size = 14)
     if "ssp370" in checked or "ssp585" in checked:
         fig.update_layout(hovermode="x",yaxis_range=[250,1200])
     else:
@@ -355,74 +372,66 @@ def update_gauge(slider,today_click):
     return gauge,date,n_clicks,slider_value
 
 
-
+# Capita Country Emissions
 @app.callback(
     Output(component_id="fig_country_capita",component_property="figure"),
     Input(component_id="country_dd",component_property="value"),
     Input(component_id="cummulation_switch",component_property="value")
 )
-def update_figure(selection,on):
+def update_figure(selection,cumulated_on):
 
     emissions = emissions_inverted_merged.copy(deep=True)
-    
+    color = None
     # Show different plot if countries are selected
     if selection:
-
+        color = "Country"
         selection_list = selection
 
-        # Selecto only the emission data about the selected countries
+        # Select only the emission data about the selected countries
         emissions = emissions.loc[emissions["Country"].isin(selection_list),:]
 
-        if on==True:
+        if cumulated_on==True:
             # Make the plot
-            fig_country_capita = px.scatter(data_frame=emissions,
-                                x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",color="Country", size="emissions_cumulated", 
-                                labels={"emissions_country": "CO2 Emissionen pro Land / Gt ", "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr ",
-                                "emissions_cumulated":"Kummulierte Emissionen seit 1970 / Gt"}, template=template,
-                                hover_data={"emissions_cumulated":":.2f",
-                                            "emissions_country":":.2f",
-                                            "emissions_capita":":.2f"})
-            fig_country_capita.update_layout(yaxis_range=[-1,12.5],xaxis_range=[-1,60])
-            fig_country_capita.update_traces(marker_size=9)
-            return fig_country_capita
+            size = "emissions_cumulated"
 
-        elif on == False:
+            
+        elif cumulated_on == False:
             # Make the plot
-            fig_country_capita = px.scatter(data_frame=emissions,
-                                x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",color="Country", 
-                                labels={"emissions_country": "CO2 Emissionen pro Land / Gt ", "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
-                                 template=template,
-                                hover_data={"emissions_country":":.2f",
-                                            "emissions_capita":":.2f"})
-            fig_country_capita.update_layout(yaxis_range=[-1,12.5],xaxis_range=[-1,60])
-            fig_country_capita.update_traces(marker_size=9)
-            return fig_country_capita
+            size = None
 
-    if on == True:
+            
+    if cumulated_on == True:
         # Make plot with all countries if there is no selection
-        fig_country_capita = px.scatter(data_frame=emissions,
-                                x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",
-                                template=template, size="emissions_cumulated",
-                                labels={"emissions_country": "CO2 Emissionen pro Land / Gt ",
-                                 "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
-                                hover_data={"emissions_country":":.2f",
-                                            "emissions_capita":":.2f"})
-        fig_country_capita.update_layout(yaxis_range=[-1,12.5],xaxis_range=[-1,60])
-        fig_country_capita.update_traces(marker_size=8)
+        size = "emissions_cumulated"
+
         
-        return fig_country_capita
-    
     else:
         # Make plot with all countries if there is no selection
-        fig_country_capita = px.scatter(data_frame=emissions,
-                                x="emissions_capita",y="emissions_country",animation_frame="year",hover_name="Country",template=template,
-                                labels={"emissions_country": "CO2 Emissionen pro Land / Gt ", "emissions_capita":'CO2 Emissionen pro Land pro Kopf / t ',"year":"Jahr "},
-                                hover_data={"emissions_country":":.2f",
-                                            "emissions_capita":":.2f"})
-        fig_country_capita.update_layout(yaxis_range=[-1,12.5],xaxis_range=[-1,60])
-        fig_country_capita.update_traces(marker_size=8)
+        size = None
         
-        return fig_country_capita
+    
+    # Create the plot with the selected parameters
+    fig_country_capita = px.scatter(data_frame=emissions,
+                                x="emissions_capita",
+                                y="emissions_country",
+                                animation_frame="year",
+                                hover_name="Country",
+                                size = size,
+                                color = color,
+                                template=template,
+                                labels={"emissions_country": "Land / Gt ",
+                                         "emissions_capita":'Land pro Kopf / t ',
+                                         "emissions_cumulated":"Kummuliert / Gt",
+                                         "year":"Jahr "},
+                                hover_data={"emissions_country":":.2f",
+                                            "emissions_capita":":.2f",
+                                            "emissions_cumulated":":.2f"})
+    fig_country_capita.update_layout(yaxis_range=[-1,13.5],xaxis_range=[-1,60],font_size = 14)
+    fig_country_capita.update_traces(marker_size=8)
+    return fig_country_capita
+
+
+
 
 # Callback for the thermometer showing temperature rais in one year
 @app.callback(Output(component_id="thermometer",component_property="value"),
