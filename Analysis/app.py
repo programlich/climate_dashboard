@@ -120,7 +120,7 @@ app.layout = dbc.Container([
             # concentration and budget row
             dbc.Row([
                 dbc.Col([
-                    html.H2("CO2 Konzentration in der Atmosphäre"),
+                    html.H2("CO2 Konzentration in der Atmosphäre",style={"textAlign":"center"}),
                     dcc.Graph(id="fig_concentration")
                 ], width=6), #close fig col
 
@@ -133,7 +133,15 @@ app.layout = dbc.Container([
                 ], width=1),
                 dbc.Col([
                         html.H2("CO2 Budget / Gt",style={"textAlign":"center"}),
-                        dcc.Graph(id="fig_emissions_gauge"),
+                        html.Br(),
+                        html.Div([
+                                daq.Gauge(id ="fig_emissions_gauge",
+                                    showCurrentValue=True,
+                                    value=200,
+                                    max=400,
+                                    min=0,
+                                    color = "darkred"
+                                    )],style={"textAlign":"center","margin-top":"4px"}),
                         html.H3(id="month_budget",style={"textAlign":"center"}),
 
                    
@@ -145,16 +153,14 @@ app.layout = dbc.Container([
                                     },
                                         updatemode="drag"), #close slider
 
-                                style={"margin-bottom":"0%"}), #close slider Div
+                                style={"margin-bottom":"5%"}), #close slider Div
                             
                         html.Div(
                             dbc.Button("Heute",outline=True,color="danger",id="button_today",n_clicks=0),
-                            style={"textAlign":"center","margin-bottom":"5%"}
+                            style={"textAlign":"center","margin-bottom":"5%",}
                         )
-                            
-                            
-
-                        ],width=5)
+         
+                        ],width=4)
 
             ],style={"margin-bottom":"20px"}), #close concentration row
 
@@ -249,8 +255,10 @@ def checklist(checked):
     color_dict = {"value":["gemessen","ssp119",'ssp126','ssp245','ssp370','ssp585'],
             "color":["red","blue","green","yellow","grey","darkred"]}
     color_df = pd.DataFrame(color_dict)
-    color_list = color_df.loc[color_df["value"].isin(show_list),"color"].tolist()
-
+    color_list = []
+    for line in show_list:
+        color_list.append(color_df.loc[color_df["value"]==line,"color"].item())
+    
     # Create line chart 
     fig = px.line(data_frame=concentration_copy,x="year",y=show_list, color_discrete_sequence=color_list,
                  labels={"value":"CO2 Konzentration / ppm","year":"Jahr","variable":""})
@@ -279,7 +287,7 @@ def toggle_modal(click_open, click_close, is_open):
 
 
 # Callback for gauge
-@app.callback(Output(component_id="fig_emissions_gauge", component_property="figure"),  # gauge figure
+@app.callback(Output(component_id="fig_emissions_gauge", component_property="value"),  # gauge figure
               Output(component_id="month_budget",component_property="children"),        # selected month and year
               Output(component_id="button_today",component_property="n_clicks"),        # click output -> set to 0
               Output(component_id="gauge_slider",component_property="value"),           # position on slider
@@ -313,6 +321,16 @@ def update_gauge(slider,today_click):
         date = f"{today_month} {today_year}"
         slider_value = budget_copy.loc[(budget_copy["year"]==today_year) & (budget_copy["month"]==today_month),"remaining"].index[0]
     
+    gauge = daq.Gauge(
+        showCurrentValue=True,
+        units="Gt",
+        value=this_budget,
+        max=400,
+        min=0
+        )
+    n_clicks = None
+    return this_budget,date,n_clicks,slider_value
+
     # Create the gauge
     gauge = go.Figure(go.Indicator(
     mode = "gauge+number",

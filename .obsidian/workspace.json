@@ -39,8 +39,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -107,7 +106,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Daten/IPCC_AR6_WGI_SPM_final.pdf",
+                "file": "Klimadaten.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -124,7 +123,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Daten/IPCC_AR6_WGI_SPM_final.pdf",
+                "file": "Klimadaten.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -147,7 +146,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Daten/IPCC_AR6_WGI_SPM_final.pdf"
+                "file": "Klimadaten.md"
               }
             }
           }
@@ -158,10 +157,10 @@
     "width": 300,
     "collapsed": true
   },
-  "active": "7e4d8395a70e2bd1",
+  "active": "212a46eb4b247753",
   "lastOpenFiles": [
-    "Klimadaten.md",
     "Daten/IPCC_AR6_WGI_SPM_final.pdf",
+    "Klimadaten.md",
     "Daten/IPCC_AR6_WGI_AnnexIII.pdf",
     "().md",
     "Daten/CO2-Budget.png",
