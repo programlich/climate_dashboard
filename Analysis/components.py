@@ -53,44 +53,83 @@ ssp_modal = html.Div(
 
 
 def create_emission_tabs(dict_list_countries):
-    tab_emission = dbc.Card(dbc.CardBody(
-                dbc.Row([
+   
+    
+    tab_emission = dbc.Card(
+                    dbc.CardBody(
+                        dbc.Row([
                     
-                        dbc.Col([
-                        dcc.Graph(id="fig_country_capita")
-                                ],width=10), #close figure col
-                
-                        dbc.Col([
-                        dbc.Switch( id="cummulation_switch",
-                                value=False,
-                                label="Kummulierte Emissionen",
-                                style={"margin-bottom":"10px"}),
+                            dbc.Col([
+                            dcc.Graph(id="fig_country_capita")
+                                    ],width=10), #close figure col
                     
-                        dcc.Dropdown(id="country_dd",
-                                 options=dict_list_countries,
-                                 multi=True)
+                            dbc.Col([
+                            dbc.Switch( id="cummulation_switch",
+                                    value=False,
+                                    label="Kummulierte Emissionen",
+                                    style={"margin-bottom":"10px"}),
+                        
+                            dcc.Dropdown(id="country_dd",
+                                        placeholder = "Länder wählen",
+                                        options=dict_list_countries,
+                                        multi=True)
 
-                        ],width=2) #close menu col    
-                        ],style={"margin-bottom":"0%"})),outline=False,color="#0f2537",inverse=True)
+                            ] ,width=2) #close menu col    
+                        ],style={"margin-bottom":"0%"})),
+                    outline=False,color="#0f2537",inverse=True)
+
+    top_dd_list = []
+    for i in range(1,181):
+        this_dict = {}
+        this_dict["label"] = str(i)
+        this_dict["value"] = i
+        top_dd_list.append(this_dict)
+
+    year_dd_list = []
+    for i in range(1850,2021):
+        this_dict = {}
+        this_dict["label"] = str(i)
+        this_dict["value"] = i
+        year_dd_list.append(this_dict)
 
     tab_emission_toplist =  dbc.Card(
                 dbc.CardBody(dbc.Row([
                     dbc.Col([
-                    dcc.Graph(id="lfig_country_capita")
+                    dcc.Graph(id="fig_emissions_toplist")
                     ],width=10), #close figure col
                 
                 dbc.Col([
-                    dbc.Switch( id="lcummulation_switch",
-                                value=False,
-                                label="Kummulierte Emissionen",
-                                style={"margin-bottom":"10px"}),
+                    html.Div([
+                        dbc.Label("Sortieren nach:"),
+                        dbc.RadioItems(
+                            id="toplist_buttons",
+                            options=[
+                                {"label": "Land", "value": "emissions_country"},
+                                {"label": "Land pro Kopf", "value": "emissions_capita"},
+                                {"label": "Kummulierte Emissionen", "value": "emissions_cumulated"},
+                            ],
+                            value="emissions_country"),
+                        ],style={"margin-bottom":"20px"}
+                    ),
+                                
                     
-                    dcc.Dropdown(id="lcountry_dd",
-                                 options=dict_list_countries,
-                                 multi=True)
+                    html.Div("Top"),
+                        dcc.Dropdown(id="top_dd",
+                                 placeholder = "Top...",
+                                 options=top_dd_list,
+                                 value = 10,
+                                 multi=False),
+                    html.Br(),
+                    
+                    html.Div("Jahr"),
+                        dcc.Dropdown(id="year_dd",
+                                 placeholder = "Jahr",
+                                 options=year_dd_list,
+                                 value = 2020,
+                                 multi=False)
 
                     ],width=2) #close menu col    
-                ],style={"margin-bottom":"0%"}))) 
+                ])),outline=False,color="#0f2537",inverse=True) 
 
     tabs = dbc.Tabs(
     [

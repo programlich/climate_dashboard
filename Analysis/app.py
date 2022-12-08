@@ -123,7 +123,7 @@ app.layout = dbc.Container([
             # Concentration Column
             dbc.Col(
                 # Header
-                html.Div([dbc.CardHeader(html.H2("CO2 Konzentration in der Atmosphäre",style={"textAlign":"center"})),
+                html.Div([dbc.CardHeader(html.H2("CO\u2082 Konzentration in der Atmosphäre",style={"textAlign":"center"})),
                 # Content row
                 dbc.Row([
                     # Figure col    
@@ -152,7 +152,7 @@ app.layout = dbc.Container([
                 # Budget col
                 dbc.Col([
                         html.Div([
-                        dbc.CardHeader(html.H2("CO2 Budget / Gt",style={"textAlign":"center"})),
+                        dbc.CardHeader(html.H2("CO\u2082 Budget / Gt",style={"textAlign":"center"})),
                         html.Br(),
                         html.Div([
                                 daq.Gauge(id ="fig_emissions_gauge",
@@ -188,22 +188,20 @@ app.layout = dbc.Container([
                                 'padding':'0px 0px 8px 0px',
                                 "height":"95%"})],width={"size":4,"offset":0})
 
-            ],style={"margin-bottom":"20px"}), #close concentration row
+            ],style={"margin-bottom":"0px"}), #close concentration row
 
-            # Second header row
-            #dbc.Row(dbc.Col(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger"),
-            #        width={"size":8,"offset":2}),justify="center",style={"margin-bottom":"20px"}),
-            
-            # Dropdown and Switch row
-  
 
             # Emissions row  
             html.Div([
-                dbc.CardHeader(html.H2("CO2 Emissionen durch Verbrennung fossiler Energieträger",
+                # Header
+                dbc.CardHeader(html.H2("CO\u2082 Emissionen durch Verbrennung fossiler Energieträger",
                                 style={"textAlign":"center"})),
+                # Emissions Content
                 dbc.CardBody(create_emission_tabs(dict_list_countries),
                             )
                     ],style={"border":"0.8px white solid","margin-bottom":"5%","border-radius":10}),
+
+
 
 
             # Header row temperature graphs
@@ -251,10 +249,6 @@ app.layout = dbc.Container([
 
                     ],align="end",justify="center",style={"margin-bottom":"30px"}), # Close first row
        
-
-           
-          
-
             
                 ],className="dbc") #close dbc container
 
@@ -278,7 +272,7 @@ def plot_concentration(checked):
     
     # Create line chart 
     fig = px.line(data_frame=concentration_copy,x="year",y=show_list, color_discrete_sequence=color_list,
-                 labels={"value":"CO2 Konzentration / ppm","year":"Jahr","variable":""})
+                 labels={"value":"CO\u2082 Konzentration / ppm","year":"Jahr","variable":""})
     fig.update_traces(hovertemplate=None)
     fig.update_layout(font_size = 14)
     if "ssp370" in checked or "ssp585" in checked:
@@ -287,6 +281,7 @@ def plot_concentration(checked):
         fig.update_layout(hovermode="x",yaxis_range=[250,650])
 
     return fig
+
 
 # Callback for the modal giving information about the ssps
 @app.callback(
@@ -300,7 +295,6 @@ def toggle_modal(click_open, click_close, is_open):
     if click_open or click_close:
         return not is_open
     return is_open
-
 
 
 # Callback for gauge
@@ -372,7 +366,7 @@ def update_gauge(slider,today_click):
     return gauge,date,n_clicks,slider_value
 
 
-# Capita Country Emissions
+# Callback for Capita Country Emissions
 @app.callback(
     Output(component_id="fig_country_capita",component_property="figure"),
     Input(component_id="country_dd",component_property="value"),
@@ -430,7 +424,40 @@ def update_figure(selection,cumulated_on):
     fig_country_capita.update_traces(marker_size=8)
     return fig_country_capita
 
+# Callback for emissions toplist
+@app.callback(Output(component_id="fig_emissions_toplist",component_property="figure"),
+              Input(component_id="toplist_buttons",component_property="value"),
+              Input(component_id="top_dd",component_property="value"),
+              Input(component_id="year_dd",component_property="value")
+)
 
+def update_emissions_toplist(top_type,top_number,top_year):
+
+    emissions = emissions_inverted_merged.copy(deep=True)
+
+    # Sort and slice emissions according to user input
+    emissions = emissions.loc[emissions["year"] == top_year,:]
+    emissions = emissions.sort_values(by=[top_type],ascending=False)
+    emissions = emissions.head(top_number)
+
+    fig = px.scatter(data_frame=emissions,
+                     x="emissions_capita",
+                     y="emissions_country",
+                     size="emissions_cumulated",
+                     color="Country",
+                     hover_name="Country",
+                     template=template,
+                     labels={"emissions_country": "Land / Gt ",
+                                "emissions_capita":'Land pro Kopf / t ',
+                                "emissions_cumulated":"Kummuliert / Gt",
+                                "year":"Jahr "},
+                     hover_data={"emissions_country":":.2f",
+                                "emissions_capita":":.2f",
+                                "emissions_cumulated":":.2f"})
+    fig.update_layout(font_size = 14)
+    fig.update_traces(marker_line_width=0)
+    return fig
+    
 
 
 # Callback for the thermometer showing temperature rais in one year

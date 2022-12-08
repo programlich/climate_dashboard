@@ -10,5 +10,5 @@ co2_concentration_total = pd.merge(left=ghg_observed,right=co2_projections,on="y
 co2_concentration_total.loc[co2_concentration_total["year"]==2020,"gemessen"] = 414
 co2_concentration_total.drop(co2_concentration_total.loc[co2_concentration_total["year"]==1750].index,inplace=True)
 
-co2_concentration_total.to_csv("/home/matthias/Python/Klimadashboard/Analysis/data/co2_concentration_total.csv")
+co2_concentration_total.to_csv("/home/matthias/Python/Klimadashboard/Analysis/data/co2_concentration_total.csv",index=False)
 
