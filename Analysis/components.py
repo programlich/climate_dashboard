@@ -145,3 +145,45 @@ def create_emission_tabs(dict_list_countries):
     ]
         )
     return tabs
+
+
+####################
+# temperature tabs #
+####################
+
+import plotly.express as px
+
+def make_temp_early_fig(temp_early):
+    fig_temp = px.line(data_frame=temp_early, x="year", y="temp",
+    labels={"year":"Jahr","temp":"Temperaturänderung / °C"},width=800)
+    fig_temp.update_layout(xaxis_range=[0,1990],yaxis_range=[-0.2,0.8])
+    return fig_temp
+
+def make_temp_recent_fig(temp_recent):
+    fig_temp = px.line(data_frame=temp_recent, x="year", y="observed",
+    labels={"year":"Jahr","observed":"Temperaturänderung / °C"},width=800)
+    fig_temp.update_layout(xaxis_range=[1850,2023],yaxis_range=[-0.5,1.5])
+    return fig_temp
+
+
+def create_temperature_tabs(fig_temp_early, fig_temp_recent):
+
+    tab_temp_early = dbc.Row([ dcc.Graph(figure=fig_temp_early,id="fig_temp_early") ],
+                            style={"border":"0.1px #e3e3e3 solid",    #styling row
+                                    "margin":"2px",
+                                    "border-radius":10})
+
+    tab_temp_recent = dbc.Row([ dcc.Graph(figure=fig_temp_recent,id="fig_temp_recent") ],
+                            style={"border":"0.1px #e3e3e3 solid",    #styling row
+                                    "margin":"2px", 
+                                    "border-radius":10})
+
+    tabs = dbc.Tabs(
+    [
+    
+    dbc.Tab(tab_temp_recent, label="1850-2019"),
+    dbc.Tab(tab_temp_early, label="1-1990")
+    
+    ]
+        )
+    return tabs

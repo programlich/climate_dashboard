@@ -12,7 +12,7 @@ import os
 from dash_bootstrap_templates import load_figure_template
 import locale
 
-from components import ssp_checklist, ssp_modal, create_emission_tabs
+from components import ssp_checklist, ssp_modal, create_emission_tabs, create_temperature_tabs
 
 locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
 dbc_css = os.path.abspath("assets/dbc.min.css")
@@ -25,10 +25,30 @@ load_figure_template(template)
 ## Global temperature change ##
 ###############################
 
+# Create df for temperature from 1-1990
+temp_early = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/temperature_early.csv")
+fig_temp_early = px.line(data_frame=temp_early, x="year", y="temp",
+    labels={"year":"Jahr","temp":"Temperaturänderung / °C"},width=800)
+fig_temp_early.update_layout(xaxis_range=[0,1990],
+                            yaxis_range=[-0.2,0.8],
+                            paper_bgcolor='rgba(0,0,0,0)',
+                            plot_bgcolor='rgba(0,0,0,0)',
+                            modebar = dict(bgcolor='rgba(0, 0, 0, 0)'))
+fig_temp_early.update_traces(line_color="#c5860d")
+fig_temp_early.update_xaxes(linecolor="white",showgrid=False,zeroline=False)
+fig_temp_early.update_yaxes(linecolor="white",showgrid=False,zeroline=False)
+   
 # Create df for recente temperature changes
-temp_recent_colnames = ["year", "human_natural", "human_natural_top", "human_natural_bottom", "natural", "natural_top", "natural_bottom", "observed" ]
-temp_recent = pd.read_csv("/home/matthias/Python/Klimadashboard/Daten/gmst_changes_model_and_obs.csv", skiprows=36, skipfooter=1, names=temp_recent_colnames, header=None, engine="python")
-temp_recent["dummy_data"] = 1
+temp_recent = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/temperature_recent.csv")
+fig_temp_recent = px.line(data_frame=temp_recent, x="year", y="observed",
+    labels={"year":"Jahr","observed":"Temperaturänderung / °C"},width=800)
+fig_temp_recent.update_layout(xaxis_range=[1850,2023],yaxis_range=[-0.5,1.5],
+                                paper_bgcolor='rgba(0,0,0,0)',
+                                plot_bgcolor='rgba(0,0,0,0)',
+                                modebar = dict(bgcolor='rgba(0, 0, 0, 0)'))
+fig_temp_recent.update_traces(line_color = "#c5860d")
+fig_temp_recent.update_xaxes(linecolor="white",showgrid=False,zeroline=False)
+fig_temp_recent.update_yaxes(linecolor="white",showgrid=False,zeroline=False)
 
 # linechart figure for recent temperature changes
 fig_temp_line = px.line(data_frame=temp_recent, x="year", y="observed",
@@ -36,13 +56,6 @@ fig_temp_line = px.line(data_frame=temp_recent, x="year", y="observed",
   width=800, template=template)
 fig_temp_line.update_layout(xaxis_range=[1850,2023],yaxis_range=[-0.5,1.5])
 
-# Barchart figure showing temperatur change in one selected year
-fig_temp_bar = px.bar(data_frame=temp_recent,x="dummy_data",y="observed",width=400, 
-            labels={"x":"Jahr","observed":"Temperaturänderung / °C","year":"Jahr"}, animation_frame="year",
-            template="seaborn")
-fig_temp_bar.update_xaxes(visible=False)
-fig_temp_bar.update_layout(yaxis_range=[-0.5,1.5],hovermode=False)
-fig_temp_bar["layout"].pop("updatemenus")
 
 #############
 # Emissions #
@@ -113,8 +126,8 @@ app.layout = dbc.Container([
             
             # Title row
             dbc.Row(
-                dbc.Col(html.H1("Klimadashboard"),width={"size":6,"offset":3}),
-                justify="center",style={"margin-bottom":"40px","margin-top":"20px"}),
+                #dbc.Col(html.H1("Klimadashboard"),width={"size":6,"offset":3}),
+                justify="center",style={"margin-top":"25px"}),
             
 
             # concentration and budget row
@@ -196,61 +209,32 @@ app.layout = dbc.Container([
                 # Emissions Content
                 dbc.CardBody(create_emission_tabs(dict_list_countries),
                             )
-                    ]#,style={"border":"0.8px white solid","margin-bottom":"5%","border-radius":10}
+                    ],style={"margin-bottom":"2%"}
                     ),
 
 
 
 
-            # Header row temperature graphs
-            dbc.Row(
-                dbc.Col(html.H2("Änderung der globalen Oberflächentemperatur relativ zum Zeitraum 1850-1900",
-                style={"text-align":"center"}),
-                width={"size":10,"offset":1},align="center"),
-                justify="center"),
+               
+  
 
             # Temperature row
             dbc.Row([
                 # First col
                 dbc.Col([
-            
-                #Temp line graph
-                dcc.Graph(figure=fig_temp_line)
-                        ], width=7),
+                        dbc.Card([
+                            dbc.CardHeader(html.H2("Änderung der globalen Oberflächentemperatur relativ zum Zeitraum 1850-1900")),
+                #dcc.Graph(figure=fig_temp_recent,id="kdfa")
+                dbc.CardBody(
+                create_temperature_tabs(fig_temp_early,fig_temp_recent)
+                             )   ])
 
-                # Thermometer
-                dbc.Col(children=[
-                        # Uncomment the following line to switch back to plotly barchart
-                        # dcc.Graph(figure=fig_temp_bar) 
-                        daq.Thermometer(id="thermometer",
-                                value=0.5,
-                                min=-0.5,
-                                max = 2,
-                                showCurrentValue=True,
-                                units="C",
-                                color="darkred",
-                                style = {"background-color":"white",
-                                        "margin-top":"5%"}),
-                        html.Div(dcc.Slider(id="time_slider",value=1850,min=1850,max=2019,
-                                marks={ 1850:{"label":"1850","style":{"font-size":"20px"}},
-                                        1900:{"label":"1900","style":{"font-size":"20px"}},
-                                        1950:{"label":"1950","style":{"font-size":"20px"}},
-                                        2000:{"label":"2000","style":{"font-size":"20px"}}
-                                    },
-                                tooltip={"placement": "top", "always_visible": True},updatemode="drag"), #close slider
-
-                                style={"margin-bottom":"5%"})
-
-                                    ], # close children of thermometer col
-                                width=3)
-
-
-                    ],align="end",justify="center",style={"margin-bottom":"30px"}), # Close first row
+                    ],style={"margin-bottom":"30px"},width={"size":10,"offset":1}), # Close first row
        
             
-                ],className="dbc") #close dbc container
+                ],className="dbc") #close dbc containe2 
 
-
+])
 
 # Callback for CO2 concentration
 @app.callback(Output(component_id="fig_concentration",component_property="figure"),
@@ -449,8 +433,8 @@ def update_emissions_toplist(top_type,top_number,top_year):
     fig.update_xaxes(showline = False,zerolinecolor="white",zeroline=True,gridcolor="#accbe6")
     fig.update_yaxes(showline = False,zerolinecolor="white",zeroline=True,gridcolor="#accbe6")
     fig.update_layout(font_size = 14,
-    yaxis = dict(rangemode = 'tozero'),
-        xaxis = dict(rangemode = 'tozero'),
+                    yaxis = dict(rangemode = 'tozero'),
+                    xaxis = dict(rangemode = 'tozero'),
                     font_color = "white",
                     template = None,
                     paper_bgcolor='rgba(0,0,0,0)',
@@ -460,18 +444,6 @@ def update_emissions_toplist(top_type,top_number,top_year):
     return fig
     
 
-
-# Callback for the thermometer showing temperature rais in one year
-@app.callback(Output(component_id="thermometer",component_property="value"),
-              Input(component_id="time_slider",component_property="value"))
-
-def update_thermometer(year):
-    
-    temp_recent_copy = temp_recent.copy(deep=True)
-    
-    if year:  
-        temp = temp_recent_copy.loc[temp_recent_copy["year"]==year,"observed"].item()
-        return temp
     
     
 
