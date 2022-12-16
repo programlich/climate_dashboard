@@ -51,19 +51,17 @@ ssp_modal = html.Div(
 )
 
 
-
 def create_emission_tabs(dict_list_countries):
    
     
-    tab_emission = dbc.Card(
-                    dbc.CardBody(
-                        dbc.Row([
-                    
+    tab_emission =  dbc.Row([
+                            # Open figure col
                             dbc.Col([
                             dcc.Graph(id="fig_country_capita")
                                     ],width=10), #close figure col
-                    
+                            # open menu col
                             dbc.Col([
+                            html.Div([
                             dbc.Switch( id="cummulation_switch",
                                     value=False,
                                     label="Kummulierte Emissionen",
@@ -74,9 +72,12 @@ def create_emission_tabs(dict_list_countries):
                                         options=dict_list_countries,
                                         multi=True)
 
+                            ],style={"margin-top":"13%","margin-right":"5%"})
                             ] ,width=2) #close menu col    
-                        ],style={"margin-bottom":"0%"})),
-                    outline=False,color="#0f2537",inverse=True)
+                    ], style={  "border":"0.1px #e3e3e3 solid",
+                                "margin":"2px",
+                                "border-radius":10} #style row
+                    ) #close row
 
     top_dd_list = []
     for i in range(1,209):
@@ -92,14 +93,16 @@ def create_emission_tabs(dict_list_countries):
         this_dict["value"] = i
         year_dd_list.append(this_dict)
 
-    tab_emission_toplist =  dbc.Card(
-                dbc.CardBody(dbc.Row([
-                    dbc.Col([
+    tab_emission_toplist =  dbc.Row([ #open row
+                
+                #open figure col
+                dbc.Col([
                     dcc.Graph(id="fig_emissions_toplist")
                     ],width=10), #close figure col
                 
+                #open menu col
                 dbc.Col([
-                    html.Div([
+                    html.Div([  #buttons div
                         dbc.Label("Sortieren nach:"),
                         dbc.RadioItems(
                             id="toplist_buttons",
@@ -109,11 +112,11 @@ def create_emission_tabs(dict_list_countries):
                                 {"label": "Kummulierte Emissionen", "value": "emissions_cumulated"},
                             ],
                             value="emissions_country"),
-                        ],style={"margin-bottom":"20px"}
-                    ),
+                        ],style={"margin-top":"10%","margin-bottom":"20px"}
+                    ), #close buttons div
                                 
-                    
-                    html.Div("Top"),
+                    # Dropdowns
+                    html.Div("Top"),    
                         dcc.Dropdown(id="top_dd",
                                  placeholder = "Top...",
                                  options=top_dd_list,
@@ -129,13 +132,16 @@ def create_emission_tabs(dict_list_countries):
                                  multi=False)
 
                     ],width=2) #close menu col    
-                ])),outline=False,color="#0f2537",inverse=True) 
+                ],style={"border":"0.1px #e3e3e3 solid",    #styling row
+                        "margin":"2px",
+                        "border-radius":10})
 
     tabs = dbc.Tabs(
     [
-        dbc.Tab(tab_emission, label="Emissionen"),
-        dbc.Tab(tab_emission_toplist, label="Rangliste"),
-        
+    
+    dbc.Tab(tab_emission_toplist, label="Rangliste"),
+    dbc.Tab(tab_emission, label="Emissionen")
+    
     ]
         )
     return tabs

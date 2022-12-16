@@ -95,3 +95,21 @@
                                             }
                                     },                            
                                 ) """
+
+tab_emission = html.Div([
+                    dbc.Col([
+                    dcc.Graph(id="fig_country_capita")
+                    ],width=10), #close figure col
+                
+                dbc.Col([
+                    dbc.Switch( id="cummulation_switch",
+                                value=False,
+                                label="Kummulierte Emissionen",
+                                style={"margin-bottom":"10px"}),
+                    
+                    dcc.Dropdown(id="country_dd",
+                                 options=dict_list_countries,
+                                 multi=True)
+
+                    ],width=2) #close menu col    
+                ])

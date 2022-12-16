@@ -16,7 +16,7 @@ from components import ssp_checklist, ssp_modal, create_emission_tabs
 
 locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
 dbc_css = os.path.abspath("assets/dbc.min.css")
-template = "superhero"
+template = "quartz"
 
 load_figure_template(template)
 
@@ -106,8 +106,8 @@ concentration = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/
 ############
 
 # Create dash app
-app = dash.Dash(external_stylesheets=[dbc.themes.SUPERHERO,dbc_css])
-
+#app = dash.Dash(external_stylesheets=[dbc.themes.MINTY,dbc_css])
+app = dash.Dash(__name__)
 
 app.layout = dbc.Container([
             
@@ -119,48 +119,18 @@ app.layout = dbc.Container([
 
             # concentration and budget row
             dbc.Row([
-            
-            # Concentration Column
-            dbc.Col(
-                # Header
-                html.Div([dbc.CardHeader(html.H2("CO\u2082 Konzentration in der Atmosphäre",style={"textAlign":"center"})),
-                # Content row
-                dbc.Row([
-                    # Figure col    
-                    dbc.Col([
-                        dcc.Graph(id="fig_concentration")
-                        ], width=10), #close figure col
-                    
-                    # Menu col               
-                    dbc.Col([
-                        html.Br(),
-                        html.Br(),
-                        ssp_checklist, #Select certain ssp data
-                        ssp_modal      #Explenation on ssp     
-                        ], width=2), #close menu col
-
-                        ]) #close content row
-                    
-                    ],style={"border":"0.8px white solid",
-                            "margin-bottom":"5%",
-                            "border-radius":10,
-                            'padding':'0px 0px 8px 0px',
-                            "height":"95%"}), #close styling Div
-                width=8), #close concentration col
-
-
-                # Budget col
+            # Budget col
                 dbc.Col([
-                        html.Div([
+                        dbc.Card([
                         dbc.CardHeader(html.H2("CO\u2082 Budget / Gt",style={"textAlign":"center"})),
                         html.Br(),
-                        html.Div([
+                        dbc.CardBody([
                                 daq.Gauge(id ="fig_emissions_gauge",
                                     showCurrentValue=True,
                                     value=200,
                                     max=400,
                                     min=0,
-                                    color = "darkred"
+                                    color = "#c5860d"
                                     )],style={"textAlign":"center","margin-top":"4px"}),
                         html.H3(id="month_budget",style={"textAlign":"center"}),
 
@@ -182,24 +152,52 @@ app.layout = dbc.Container([
                             style={"textAlign":"center","margin-bottom":"5%",}
                         )
          
-                        ],style={"border":"0.8px white solid",
-                                "margin-bottom":"5%",
-                                "border-radius":10,
+                        ],style={"margin-bottom":"5%",
                                 'padding':'0px 0px 8px 0px',
-                                "height":"95%"})],width={"size":4,"offset":0})
+                                "height":"95%"})], #styling budget card
+                width={"size":4,"offset":0}), #styling budget col
+            # Concentration Column
+            dbc.Col(
+                # Header
+                dbc.Card([
+                    dbc.CardHeader(html.H2("CO\u2082 Konzentration in der Atmosphäre",style={"textAlign":"center"})),
+                    # Content row
+                    dbc.Row([
+                        # Figure col    
+                        dbc.Col([
+                            dcc.Graph(id="fig_concentration")
+                            ], width=10), #close figure col
+                        
+                        # Menu col               
+                        dbc.Col([
+                            html.Br(),
+                            html.Br(),
+                            ssp_checklist, #Select certain ssp data
+                            ssp_modal      #Explenation on ssp     
+                            ], width=2), #close menu col
 
-            ],style={"margin-bottom":"0px"}), #close concentration row
+                            ]) #close content row
+                        
+                ],style={"height":"95%"} #styling concentration
+                ), #close concentration card
+                width=8), #close concentration col
+
+
+                
+
+            ],style={"margin-bottom":"0px"}), #close concentration and budget row
 
 
             # Emissions row  
-            html.Div([
+            dbc.Card([
                 # Header
                 dbc.CardHeader(html.H2("CO\u2082 Emissionen durch Verbrennung fossiler Energieträger",
                                 style={"textAlign":"center"})),
                 # Emissions Content
                 dbc.CardBody(create_emission_tabs(dict_list_countries),
                             )
-                    ],style={"border":"0.8px white solid","margin-bottom":"5%","border-radius":10}),
+                    ]#,style={"border":"0.8px white solid","margin-bottom":"5%","border-radius":10}
+                    ),
 
 
 
@@ -252,6 +250,8 @@ app.layout = dbc.Container([
             
                 ],className="dbc") #close dbc container
 
+
+
 # Callback for CO2 concentration
 @app.callback(Output(component_id="fig_concentration",component_property="figure"),
               Input(component_id="ssp_checklist",component_property="value")
@@ -264,7 +264,7 @@ def plot_concentration(checked):
 
     # Select all the corresponding colors to the selected data
     color_dict = {"value":["gemessen","ssp119",'ssp126','ssp245','ssp370','ssp585'],
-            "color":["red","blue","green","yellow","grey","darkred"]}
+            "color":["#aba7a7","#c5860d","#ba640c","#f44336","#ae2a12","#821f33"]}
     color_df = pd.DataFrame(color_dict)
     color_list = []
     for line in show_list:
@@ -273,8 +273,13 @@ def plot_concentration(checked):
     # Create line chart 
     fig = px.line(data_frame=concentration_copy,x="year",y=show_list, color_discrete_sequence=color_list,
                  labels={"value":"CO\u2082 Konzentration / ppm","year":"Jahr","variable":""})
-    fig.update_traces(hovertemplate=None)
-    fig.update_layout(font_size = 14)
+    fig.update_xaxes(linecolor = "white")
+    fig.update_yaxes(linecolor = "white")
+    fig.update_traces(hovertemplate=None,line_width = 3)
+    fig.update_layout(font_size = 14,
+                    paper_bgcolor='rgba(0,0,0,0)', 
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    modebar = dict(bgcolor='rgba(0, 0, 0, 0)'))
     if "ssp370" in checked or "ssp585" in checked:
         fig.update_layout(hovermode="x",yaxis_range=[250,1200])
     else:
@@ -342,29 +347,6 @@ def update_gauge(slider,today_click):
     n_clicks = None
     return this_budget,date,n_clicks,slider_value
 
-    # Create the gauge
-    gauge = go.Figure(go.Indicator(
-    mode = "gauge+number",
-    value = this_budget,
-    domain = {'x': [0, 1], 'y': [0, 1]},
-    
-    gauge = {'axis': {'range': [None, 400]},
-            'borderwidth': 4,
-            'bordercolor': "darkgray",
-            'steps' : [
-                {'range': [0, 200], 'color': "#ebebeb"},
-                {'range': [200, 400], 'color': "#ebebeb"}],
-                'bar': {'color': "darkred"},}
-    ))
-  
-    gauge.update_layout(paper_bgcolor = "#0f2537", font = {'color': "#ebebeb", 'family': "Arial"})#,margin=dict(l=0, r=0, t=0, b=0))#,width=500,height=300)
-    gauge.update_traces(gauge_axis_tickfont_size=15)
-
-    
-    n_clicks = None #Set n_clicks back to 0 so it doesnt increment forever
-    
-    return gauge,date,n_clicks,slider_value
-
 
 # Callback for Capita Country Emissions
 @app.callback(
@@ -412,7 +394,7 @@ def update_figure(selection,cumulated_on):
                                 hover_name="Country",
                                 size = size,
                                 color = color,
-                                template=template,
+                                template="ggplot2",
                                 labels={"emissions_country": "Land / Gt ",
                                          "emissions_capita":'Land pro Kopf / t ',
                                          "emissions_cumulated":"Kummuliert / Gt",
@@ -420,8 +402,17 @@ def update_figure(selection,cumulated_on):
                                 hover_data={"emissions_country":":.2f",
                                             "emissions_capita":":.2f",
                                             "emissions_cumulated":":.2f"})
-    fig_country_capita.update_layout(yaxis_range=[-1,13.5],xaxis_range=[-1,60],font_size = 14)
-    fig_country_capita.update_traces(marker_size=8)
+    
+    fig_country_capita.update_xaxes(showline = False,zerolinecolor="white",showgrid=False)
+    fig_country_capita.update_yaxes(showline=False,zerolinecolor="white",showgrid=False)
+    fig_country_capita.update_layout(yaxis_range=[-1,13.5],xaxis_range=[-1,60],
+                                    font_size = 14,
+                                    font_color = "white",
+                                    template = None,
+                                    paper_bgcolor='rgba(0,0,0,0)',
+                                    plot_bgcolor='rgba(0,0,0,0)',
+                                    modebar = dict(bgcolor='rgba(0, 0, 0, 0)'))
+    fig_country_capita.update_traces(marker_size=10)
     return fig_country_capita
 
 # Callback for emissions toplist
@@ -454,7 +445,17 @@ def update_emissions_toplist(top_type,top_number,top_year):
                      hover_data={"emissions_country":":.2f",
                                 "emissions_capita":":.2f",
                                 "emissions_cumulated":":.2f"})
-    fig.update_layout(font_size = 14)
+    
+    fig.update_xaxes(showline = False,zerolinecolor="white",zeroline=True,gridcolor="#accbe6")
+    fig.update_yaxes(showline = False,zerolinecolor="white",zeroline=True,gridcolor="#accbe6")
+    fig.update_layout(font_size = 14,
+    yaxis = dict(rangemode = 'tozero'),
+        xaxis = dict(rangemode = 'tozero'),
+                    font_color = "white",
+                    template = None,
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    modebar = dict(bgcolor='rgba(0, 0, 0, 0)'))
     fig.update_traces(marker_line_width=0)
     return fig
     
