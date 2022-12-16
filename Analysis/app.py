@@ -232,9 +232,9 @@ app.layout = dbc.Container([
                     ],style={"margin-bottom":"30px"},width={"size":10,"offset":1}), # Close first row
        
             
-                ],className="dbc") #close dbc containe2 
+                ]) #close dbc containe2 
 
-])
+],className="dbc")
 
 # Callback for CO2 concentration
 @app.callback(Output(component_id="fig_concentration",component_property="figure"),
