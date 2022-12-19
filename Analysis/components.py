@@ -1,7 +1,15 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 
+##########
+# Colors #
+##########
+my_color_palette = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52']
 
+
+#########################
+# Concentration and ssp #
+#########################
 
 ssp_checklist = html.Div(
     [
@@ -33,7 +41,7 @@ ssp_infotext = "lorem ipsum"
 
 ssp_modal = html.Div(
     [
-        dbc.Button("Info ssp", id="open_ssp_modal", n_clicks=0),
+        dbc.Button(html.B("SSP?"), id="open_ssp_modal", n_clicks=0),
         dbc.Modal(
             [
                 dbc.ModalHeader(dbc.ModalTitle("Social pathway")),
@@ -50,6 +58,9 @@ ssp_modal = html.Div(
     ]
 )
 
+#################
+# Emission tabs #
+#################
 
 def create_emission_tabs(dict_list_countries):
    
@@ -173,3 +184,96 @@ def create_temperature_tabs(fig_temp_early, fig_temp_recent):
     ]
         )
     return tabs
+
+
+###############
+# Info modals #
+###############
+
+# Budget modal
+budget_infotext = "lorem ipsum"
+
+budget_modal = html.Div(
+    [
+        dbc.Button("Info", id="open_budget_modal", n_clicks=0),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("CO2 Budget")),
+                dbc.ModalBody(budget_infotext),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "schließen", id="close_budget_modal", className="ml-auto", n_clicks=0
+                    )
+                ),
+            ],
+            id="budget_modal",
+            is_open=False,
+        ),
+    ]
+)
+
+# Concentration modal
+concentration_infotext = "lorem ipsum"
+
+concentration_modal = html.Div(
+    [
+        dbc.Button("Info", id="open_concentration_modal", n_clicks=0),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("CO2 Konzentration")),
+                dbc.ModalBody(concentration_infotext),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "schließen", id="close_concentration_modal", className="ml-auto", n_clicks=0
+                    )
+                ),
+            ],
+            id="concentration_modal",
+            is_open=False,
+        ),
+    ]
+)
+
+# Concentration modal
+emission_infotext = "lorem ipsum"
+
+emissions_modal = html.Div(
+    [
+        dbc.Button("Info", id="open_emission_modal", n_clicks=0),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("CO2 Emissionen")),
+                dbc.ModalBody(emission_infotext),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "schließen", id="close_emission_modal", className="ml-auto", n_clicks=0
+                    )
+                ),
+            ],
+            id="emission_modal",
+            is_open=False,
+        ),
+    ]
+)
+
+# Temperature modal
+temp_infotext = "lorem ipsum"
+
+temp_modal = html.Div(
+    [
+        dbc.Button("Info", id="open_temp_modal", n_clicks=0),
+        dbc.Modal(
+            [
+                dbc.ModalHeader(dbc.ModalTitle("Temperatur")),
+                dbc.ModalBody(temp_infotext),
+                dbc.ModalFooter(
+                    dbc.Button(
+                        "schließen", id="close_temp_modal", className="ml-auto", n_clicks=0
+                    )
+                ),
+            ],
+            id="temp_modal",
+            is_open=False,
+        ),
+    ],style={"float":"right","display":"inline-block"}
+)

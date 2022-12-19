@@ -13,6 +13,9 @@ from dash_bootstrap_templates import load_figure_template
 import locale
 
 from components import ssp_checklist, ssp_modal, create_emission_tabs, create_temperature_tabs
+from components import budget_modal, concentration_modal, emissions_modal,temp_modal
+from components import my_color_palette
+
 
 locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
 dbc_css = os.path.abspath("assets/dbc.min.css")
@@ -135,7 +138,10 @@ app.layout = dbc.Container([
             # Budget col
                 dbc.Col([
                         dbc.Card([
-                        dbc.CardHeader(html.H2("CO\u2082 Budget / Gt",style={"textAlign":"center"})),
+                        dbc.CardHeader([
+                            html.H2("CO\u2082 Budget",style={"textAlign":"center","display":"inline-block"}),
+                            html.Div(budget_modal,style={"float":"right","display":"inline"})
+                            ]),
                         html.Br(),
                         dbc.CardBody([
                                 daq.Gauge(id ="fig_emissions_gauge",
@@ -173,7 +179,13 @@ app.layout = dbc.Container([
             dbc.Col(
                 # Header
                 dbc.Card([
-                    dbc.CardHeader(html.H2("CO\u2082 Konzentration in der Atmosphäre",style={"textAlign":"center"})),
+                    dbc.CardHeader([
+                        html.Div([
+                        html.H2("CO\u2082 Konzentration",style={"textAlign":"center","display":"inline-block"}),
+                        html.Div(concentration_modal,style={"display":"inline-block","float":"right"})
+                        ],style={"textAlign":"center"})
+                        ]),
+                                       
                     # Content row
                     dbc.Row([
                         # Figure col    
@@ -204,8 +216,13 @@ app.layout = dbc.Container([
             # Emissions row  
             dbc.Card([
                 # Header
-                dbc.CardHeader(html.H2("CO\u2082 Emissionen durch Verbrennung fossiler Energieträger",
-                                style={"textAlign":"center"})),
+                dbc.CardHeader([
+                    html.Div([
+                    html.H3("CO\u2082 Emissionen durch Verbrennung fossiler Energieträger",
+                                style={"textAlign":"center","display":"inline-block"}),
+                    html.Div(emissions_modal,style={"float":"right","display":"inline-block"})
+                    ],style={"textAlign":"center"})
+                    ]),
                 # Emissions Content
                 dbc.CardBody(create_emission_tabs(dict_list_countries),
                             )
@@ -217,8 +234,13 @@ app.layout = dbc.Container([
                 # First col
                 dbc.Col([
                     dbc.Card([
-                        dbc.CardHeader(
-                            html.H2("Globale Oberflächentemperatur"),style={"textAlign":"center"}),
+                        dbc.CardHeader([
+                            html.Div([
+                            html.H2("Globale Oberflächentemperatur",
+                            style={"textAlign":"center","display":"inline-block"}),
+                            temp_modal
+                        ],style={"textAlign":"center"})
+                        ]),
                 
                         dbc.CardBody(
                             create_temperature_tabs(fig_temp_early,fig_temp_recent)
@@ -274,7 +296,7 @@ def plot_concentration(checked):
     State(component_id="ssp_modal",component_property="is_open")
 )
 
-def toggle_modal(click_open, click_close, is_open):
+def toggle_ssp_modal(click_open, click_close, is_open):
     if click_open or click_close:
         return not is_open
     return is_open
@@ -372,6 +394,7 @@ def update_figure(selection,cumulated_on):
                                 hover_name="Country",
                                 size = size,
                                 color = color,
+                                color_discrete_sequence=my_color_palette,
                                 template="ggplot2",
                                 labels={"emissions_country": "Land / Gt ",
                                          "emissions_capita":'Land pro Kopf / t ',
@@ -415,6 +438,7 @@ def update_emissions_toplist(top_type,top_number,top_year):
                      size="emissions_cumulated",
                      color="Country",
                      hover_name="Country",
+                     color_discrete_sequence= my_color_palette,
                      template=template,
                      labels={"emissions_country": "Land / Gt ",
                                 "emissions_capita":'Land pro Kopf / t ',
@@ -436,10 +460,65 @@ def update_emissions_toplist(top_type,top_number,top_year):
                     modebar = dict(bgcolor='rgba(0, 0, 0, 0)'))
     fig.update_traces(marker_line_width=0)
     return fig
+
+#########
+# Infos # 
+#########
+
+# Callback for the modal giving information about the budget
+@app.callback(
+    Output(component_id="budget_modal", component_property="is_open"),
+    [Input(component_id="open_budget_modal", component_property="n_clicks"),
+    Input(component_id="close_budget_modal", component_property="n_clicks")],
+    State(component_id="budget_modal",component_property="is_open")
+)
+
+def toggle_budget_modal(click_open, click_close, is_open):
+    if click_open or click_close:
+        return not is_open
+    return is_open
     
 
+# Callback for the modal giving information about the concentration
+@app.callback(
+    Output(component_id="concentration_modal", component_property="is_open"),
+    [Input(component_id="open_concentration_modal", component_property="n_clicks"),
+    Input(component_id="close_concentration_modal", component_property="n_clicks")],
+    State(component_id="concentration_modal",component_property="is_open")
+)
+
+def toggle_concentration_modal(click_open, click_close, is_open):
+    if click_open or click_close:
+        return not is_open
+    return is_open
+
+
+# Callback for the modal giving information about the emissions
+@app.callback(
+    Output(component_id="emission_modal", component_property="is_open"),
+    [Input(component_id="open_emission_modal", component_property="n_clicks"),
+    Input(component_id="close_emission_modal", component_property="n_clicks")],
+    State(component_id="emission_modal",component_property="is_open")
+)
+
+def toggle_emission_modal(click_open, click_close, is_open):
+    if click_open or click_close:
+        return not is_open
+    return is_open
     
-    
+
+# Callback for the modal giving information about the temperature
+@app.callback(
+    Output(component_id="temp_modal", component_property="is_open"),
+    [Input(component_id="open_temp_modal", component_property="n_clicks"),
+    Input(component_id="close_temp_modal", component_property="n_clicks")],
+    State(component_id="temp_modal",component_property="is_open")
+)
+
+def toggle_temp_modal(click_open, click_close, is_open):
+    if click_open or click_close:
+        return not is_open
+    return is_open
 
 if __name__=="__main__":
     app.run_server(debug=True)
