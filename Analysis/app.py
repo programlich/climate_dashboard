@@ -212,29 +212,23 @@ app.layout = dbc.Container([
                     ],style={"margin-bottom":"2%"}
                     ),
 
-
-
-
-               
-  
-
             # Temperature row
             dbc.Row([
                 # First col
                 dbc.Col([
-                        dbc.Card([
-                            dbc.CardHeader(html.H2("Änderung der globalen Oberflächentemperatur relativ zum Zeitraum 1850-1900")),
-                #dcc.Graph(figure=fig_temp_recent,id="kdfa")
-                dbc.CardBody(
-                create_temperature_tabs(fig_temp_early,fig_temp_recent)
-                             )   ])
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H2("Globale Oberflächentemperatur"),style={"textAlign":"center"}),
+                
+                        dbc.CardBody(
+                            create_temperature_tabs(fig_temp_early,fig_temp_recent)
+                        )   
+                    ])
+                    ],style={"margin-bottom":"30px"},
+                    width={"size":10,"offset":1}), # Close first row
+                ])  #close temperature row
 
-                    ],style={"margin-bottom":"30px"},width={"size":10,"offset":1}), # Close first row
-       
-            
-                ]) #close dbc containe2 
-
-],className="dbc")
+],className="dbc") #close dbc container
 
 # Callback for CO2 concentration
 @app.callback(Output(component_id="fig_concentration",component_property="figure"),
@@ -248,7 +242,7 @@ def plot_concentration(checked):
 
     # Select all the corresponding colors to the selected data
     color_dict = {"value":["gemessen","ssp119",'ssp126','ssp245','ssp370','ssp585'],
-            "color":["#aba7a7","#c5860d","#ba640c","#f44336","#ae2a12","#821f33"]}
+            "color":["#21416d","#c5860d","#B22441","#8e1c34","#7b3754","#621d3a"]}
     color_df = pd.DataFrame(color_dict)
     color_list = []
     for line in show_list:

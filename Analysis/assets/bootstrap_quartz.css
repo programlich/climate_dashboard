@@ -64,7 +64,7 @@
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
   --bs-body-color: #fff;
-  --bs-body-bg: #1c77ae;
+  --bs-body-bg: #3f6a97;
   --bs-border-width: 1px;
   --bs-border-style: solid;
   --bs-border-color: rgba(255, 255, 255, 0.2);
@@ -2301,11 +2301,11 @@ textarea.form-control-lg {
   
 }
 .form-check-input:checked {
-  background-color: #f3eac0;
+  background-color: #e7d5ab;
   
 }
 .form-check-input:checked[type=checkbox] {
-  background-color: #f3eac0;
+  background-color: #e7d5ab;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='grey' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
 }
 .form-check-input:checked[type=radio] {
@@ -2895,10 +2895,10 @@ textarea.form-control-lg {
 .btn-primary {
   --bs-btn-color: #fff;
   --bs-btn-bg: ;
-  --bs-btn-border-color: #f3eac0;
+  --bs-btn-border-color: #e7d5ab;
   --bs-btn-hover-color: rgb(80, 74, 74);
-  --bs-btn-hover-bg: #f3eac0;
-  --bs-btn-hover-border-color: #f3eac0;
+  --bs-btn-hover-bg: #e7d5ab;
+  --bs-btn-hover-border-color: #e7d5ab;
   --bs-btn-focus-shadow-rgb: 235, 81, 150;
   --bs-btn-active-color: rgb(15, 14, 14);
   --bs-btn-active-bg: #ba2869;
@@ -10893,10 +10893,10 @@ textarea.form-control-lg {
 
 
 body {
-  background-image: linear-gradient(90deg, #345e98, #234a5d);
+  background-image: linear-gradient(90deg, #3f6a97, #114e55);
 }
 
-.table-secondary {
+ .table-secondary {
   --bs-table-hover-color: $white;
 }
 
