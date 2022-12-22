@@ -129,7 +129,7 @@ app.layout = dbc.Container([
             
             # Title row
             dbc.Row(
-                #dbc.Col(html.H1("Klimadashboard"),width={"size":6,"offset":3}),
+                #dbc.Col(html.H1("WARNING: Currently under active development"),width={"size":8,"offset":2}),
                 justify="center",style={"margin-top":"25px"}),
             
 
@@ -413,7 +413,7 @@ def update_figure(selection,cumulated_on):
                                     paper_bgcolor='rgba(0,0,0,0)',
                                     plot_bgcolor='rgba(0,0,0,0)',
                                     modebar = dict(bgcolor='rgba(0, 0, 0, 0)'))
-    fig_country_capita.update_traces(marker_size=10)
+    fig_country_capita.update_traces(marker_size=10,marker_line_width=0)
     return fig_country_capita
 
 # Callback for emissions toplist
@@ -448,8 +448,8 @@ def update_emissions_toplist(top_type,top_number,top_year):
                                 "emissions_capita":":.2f",
                                 "emissions_cumulated":":.2f"})
     
-    fig.update_xaxes(showline = False,zerolinecolor="white",zeroline=True,gridcolor="#accbe6")
-    fig.update_yaxes(showline = False,zerolinecolor="white",zeroline=True,gridcolor="#accbe6")
+    fig.update_xaxes(showline = False,zerolinecolor="white",zeroline=True,gridcolor="#7479c8")
+    fig.update_yaxes(showline = False,zerolinecolor="white",zeroline=True,gridcolor="#7479c8")
     fig.update_layout(font_size = 14,
                     yaxis = dict(rangemode = 'tozero'),
                     xaxis = dict(rangemode = 'tozero'),
