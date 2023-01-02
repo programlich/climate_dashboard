@@ -4,19 +4,24 @@ import dash_bootstrap_components as dbc
 ##########
 # Colors #
 ##########
-my_color_palette = ["#9e0142","#d53e4f","#f46d43","#fdae61","#e6f598","#abdda4","#3288bd","#5e4fa2",
-    "#b30000", "#7c1158", "#4421af", "#1a53ff", "#0d88e6", "#00b7c7", "#5ad45a", "#8be04e", "#ebdc78","#5E0B15",
+my_color_palette = ["#ffca03",
+                    "#ffa011",
+                    "#ff7431",
+                    "#ff414c",
+                    "#f60066",
+                    "#d40080",
+                    "#660062",
+                    "#330a5c",
+                    
+                    "#5E0B15",
                     "#90323D",
                     "#D9CAB3",
                     "#002642",
-                    "#02040F",
                     '#780116',
                     '#F7B538',
                     '#DB7C26',
                     '#8CB369', 
                     '#C32F27', 
-                   
-                    
                     '#F4E285', 
                     '#D8572A', 
                     "#F26157",
@@ -37,17 +42,22 @@ ssp_checklist = html.Div(
         
         dbc.Checklist(
             options=[
-                {"label": "SSP1-1.9", "value": "ssp119"},
-                {"label": "SSP1-2.6", "value": "ssp126"},
-                {"label": "SSP2-4.5", "value": "ssp245"},
-                {"label": "SSP3-7.0", "value": "ssp370"},
-                {"label": "SSP5-8.5", "value": "ssp585"},
+                {"label": "SSP 1-1.9", "value": "SSP 1-1.9"},
+                {"label": "SSP 1-2.6", "value": "SSP 1-2.6"},
+                {"label": "SSP 2-4.5", "value": "SSP 2-4.5"},
+                {"label": "SSP 3-7.0", "value": "SSP 3-7.0"},
+                {"label": "SSP 5-8.5", "value": "SSP 5-8.5"},
             ],
-            value=["ssp119"],
+            value=["SSP 1-1.9"],
             id="ssp_checklist",
         ),
         dbc.Popover(
-            "SSP steht für Shared Socio-economic Pathway. Klicke auf **SSP?** für mehr Information.",
+            dcc.Markdown('''SSP steht für *Shared Socio-economic Pathway*
+                                und beschreibt Modellszenarien, in denen die 
+                                Auswirkungen von Treibhausgasemissionen
+                                auf das Klima simuliert werden.    
+                                Klicke auf **Info SSP** für mehr Informationen.
+                                '''),
             target="pop1",
             body=True,
             trigger="hover",
@@ -56,16 +66,24 @@ ssp_checklist = html.Div(
     ],style={"margin-bottom":"40px"}
 )
 
-ssp_infotext = dcc.Markdown('''SSP ist die Abkürzung für *Shared Socio-economic Pathway* (geteilter sozioökonomischer Pfad)
-                                und beschreibt Modellszenarien, die der IPCC entwickelt hat. Diese modellieren die künftige Entwicklung
-                                der menschlichen Gesellschaft und deren Auswirkungen auf das Klima. Dabei werden Modelle mit geringem,
-                                mittlerem und hohem künftigen CO\u2082-Ausstoß betrachtet. Das 1,5°C-Ziel ist jedoch mit ausreichend hoher Wahrscheinlichkeit
-                                nur im Szenario *SSP1-1.9* zu halten.
+ssp_infotext = dcc.Markdown('''
+Der IPCC stellt in seinem sechsten Assesment Report (AR6)
+fünf Szenarien vor, in denen die Auswirkung unterschiedlich starker
+Treibhausgasemissionen auf das Klima modelliert werden.
+* **SSP 1-1.9**: Sehr geringe Emissionen, Nettonull ab ca. 2050
+* **SSP 1-2.6**: Geringe Emissionen, Nettonull ab ca. 2050 
+* **SSP 2-4.5**: Keine Veränderung aktueller Emissionen bis ca. 2050  
+* **SSP 3-7.0**: Verdopplung der aktuellen Emissionen bis 2100
+* **SSP 5-8.5**: Verdopplung der aktuellen Emissionen bis 2500
+
+**Das 1,5-Grad-Ziel kann nur im Szenario *SSP 1-1.9* mit ausreichend  
+hoher Wahrscheinlichkeit (66%)
+ erreicht werden.**
                     ''')
 
 ssp_modal = html.Div(
     [
-        dbc.Button(html.B("SSP?"), id="open_ssp_modal", n_clicks=0),
+        dbc.Button(html.B("Info SSP"), id="open_ssp_modal", n_clicks=0),
         dbc.Modal(
             [
                 dbc.ModalHeader(dbc.ModalTitle("Social pathway")),
@@ -77,6 +95,7 @@ ssp_modal = html.Div(
                 ),
             ],
             id="ssp_modal",
+            size="lg",
             is_open=False,
         ),
     ]

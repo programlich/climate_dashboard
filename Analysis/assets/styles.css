@@ -1,5 +1,5 @@
 circle {
-    stroke-width: 8px;
+    stroke-width: 12px;
 }
 
 .needle {
@@ -10,4 +10,8 @@ circle {
   .eYakCx .scale {
     font-size: 12px;
     fill: #d3cdcc;
+  }
+
+  .sc-iwsKbI .eYakCx{
+    color: "white";
   }

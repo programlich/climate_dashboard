@@ -144,12 +144,15 @@ app.layout = dbc.Container([
                             ]),
                         html.Br(),
                         dbc.CardBody([
+                            html.Div(
                                 daq.Gauge(id ="fig_emissions_gauge",
                                     showCurrentValue=True,
                                     value=200,
                                     max=400,
                                     min=0,
+                                    units="Gt",
                                     color = "#c5860d"
+                                    ),style={"height":"200px"} #for some reason this reduces the unnecessary space between gauge and slider
                                     )],style={"textAlign":"center","margin-top":"4px"}),
                         html.H3(id="month_budget",style={"textAlign":"center"}),
 
@@ -170,11 +173,12 @@ app.layout = dbc.Container([
                             dbc.Button("Heute",outline=True,color="danger",id="button_today",n_clicks=0),
                             style={"textAlign":"center","margin-bottom":"5%",}
                         ),
-                        dbc.CardFooter("Menge an CO\u2082, das noch emittiert werden darf, bevor das 1,5°C Ziel verfehlt wird.")
+                        dbc.CardFooter('''Menge an CO\u2082, das noch emittiert werden darf, 
+                                        bevor das 1,5-Grad-Ziel verfehlt wird.''',style={"textAlign":"center"})
          
                         ],style={"margin-bottom":"5%",
                                 'padding':'0px 0px 8px 0px',
-                                "height":"95%"})], #styling budget card
+                                "height":"97%"})], #styling budget card
                 width={"size":4,"offset":0}), #styling budget col
             # Concentration Column
             dbc.Col(
@@ -204,16 +208,17 @@ app.layout = dbc.Container([
 
                             ]), #close content row
                     dbc.CardFooter('''Historischer Verlauf der CO\u2082-Konzentration in der Atmosphäre, 
-                                    sowie der in die Zukunft projizierte Verlauf bei verschiedenen Szenarien,
-                                    die der IPCC entwickelt hat. Das 1,5°C-Ziel lässt sich nur mit dem ersten Szenario (SSP1-1.9) erreichen.''')
-                ],style={"height":"95%"} #styling concentration
+                                    sowie verschiedene Szenarien, die der IPCC entwickelt hat. 
+                                    Das 1,5-Grad-Ziel lässt sich nur mit dem ersten Szenario 
+                                    (SSP1-1.9) erreichen.''',style={"textAlign":"center"})
+                ],style={"height":"97%"} #styling concentration
                 ), #close concentration card
                 width=8), #close concentration col
 
 
                 
 
-            ],style={"margin-bottom":"0px"}), #close concentration and budget row
+            ],style={"margin-bottom":"0%"}), #close concentration and budget row
 
 
             # Emissions row  
@@ -232,7 +237,7 @@ app.layout = dbc.Container([
                 dbc.CardFooter('''Darstellung der CO\u2082-Emissionen einzelner Länder in einem bestimmten Jahr. 
                                 Zu sehen sind jeweils die gesamten Emissionen eines Landes in Gigatonnen (Gt) und
                                 die pro Kopf Emissionen in Tonnen (t). Die Größe der Blase gibt die CO\u2082-Menge an,
-                                die das Land seit 1970 bis zum gewählten Jahr emittiert hat.''')
+                                die das Land seit 1970 bis zum gewählten Jahr emittiert hat.''',style={"textAlign":"center"})
                     ],style={"margin-bottom":"2%"}
                     ),
 
@@ -253,7 +258,7 @@ app.layout = dbc.Container([
                             create_temperature_tabs(fig_temp_early,fig_temp_recent)
                         ),
                         dbc.CardFooter('''Änderung der globalen Oberflächentemperatur im Vergleich zur durchschnittlichen 
-                                        Temperatur im vorindustriellen Zeitalter (1850-1900). ''')   
+                                        Temperatur im vorindustriellen Zeitalter (1850-1900).''',style={"textAlign":"center"})   
                     ])
                     ],style={"margin-bottom":"30px"},
                     width={"size":10,"offset":1}), # Close first row
@@ -272,7 +277,7 @@ def plot_concentration(checked):
     show_list = ["gemessen"] + checked  #Select all lines to be shown
 
     # Select all the corresponding colors to the selected data
-    color_dict = {"value":["gemessen","ssp119",'ssp126','ssp245','ssp370','ssp585'],
+    color_dict = {"value":["gemessen","SSP 1-1.9",'SSP 1-2.6','SSP 2-4.5','SSP 3-7.0','SSP 5-8.5'],
             "color":["#21416d","#c5860d","#B22441","#8e1c34","#7b3754","#621d3a"]}
     color_df = pd.DataFrame(color_dict)
     color_list = []
@@ -289,7 +294,7 @@ def plot_concentration(checked):
                     paper_bgcolor='rgba(0,0,0,0)', 
                     plot_bgcolor='rgba(0,0,0,0)',
                     modebar = dict(bgcolor='rgba(0, 0, 0, 0)'))
-    if "ssp370" in checked or "ssp585" in checked:
+    if "SSP 3-7.0" in checked or "SSP 5-8.5" in checked:
         fig.update_layout(hovermode="x",yaxis_range=[250,1200])
     else:
         fig.update_layout(hovermode="x",yaxis_range=[250,650])
