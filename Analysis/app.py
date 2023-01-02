@@ -169,7 +169,8 @@ app.layout = dbc.Container([
                         html.Div(
                             dbc.Button("Heute",outline=True,color="danger",id="button_today",n_clicks=0),
                             style={"textAlign":"center","margin-bottom":"5%",}
-                        )
+                        ),
+                        dbc.CardFooter("Menge an CO\u2082, das noch emittiert werden darf, bevor das 1,5°C Ziel verfehlt wird.")
          
                         ],style={"margin-bottom":"5%",
                                 'padding':'0px 0px 8px 0px',
@@ -181,7 +182,7 @@ app.layout = dbc.Container([
                 dbc.Card([
                     dbc.CardHeader([
                         html.Div([
-                        html.H2("CO\u2082 Konzentration",style={"textAlign":"center","display":"inline-block"}),
+                        html.H2("CO\u2082 Konzentration in der Atmosphäre",style={"textAlign":"center","display":"inline-block"}),
                         html.Div(concentration_modal,style={"display":"inline-block","float":"right"})
                         ],style={"textAlign":"center"})
                         ]),
@@ -201,8 +202,10 @@ app.layout = dbc.Container([
                             ssp_modal      #Explenation on ssp     
                             ], width=2), #close menu col
 
-                            ]) #close content row
-                        
+                            ]), #close content row
+                    dbc.CardFooter('''Historischer Verlauf der CO\u2082-Konzentration in der Atmosphäre, 
+                                    sowie der in die Zukunft projizierte Verlauf bei verschiedenen Szenarien,
+                                    die der IPCC entwickelt hat. Das 1,5°C-Ziel lässt sich nur mit dem ersten Szenario (SSP1-1.9) erreichen.''')
                 ],style={"height":"95%"} #styling concentration
                 ), #close concentration card
                 width=8), #close concentration col
@@ -225,7 +228,11 @@ app.layout = dbc.Container([
                     ]),
                 # Emissions Content
                 dbc.CardBody(create_emission_tabs(dict_list_countries),
-                            )
+                            ),
+                dbc.CardFooter('''Darstellung der CO\u2082-Emissionen einzelner Länder in einem bestimmten Jahr. 
+                                Zu sehen sind jeweils die gesamten Emissionen eines Landes in Gigatonnen (Gt) und
+                                die pro Kopf Emissionen in Tonnen (t). Die Größe der Blase gibt die CO\u2082-Menge an,
+                                die das Land seit 1970 bis zum gewählten Jahr emittiert hat.''')
                     ],style={"margin-bottom":"2%"}
                     ),
 
@@ -244,7 +251,9 @@ app.layout = dbc.Container([
                 
                         dbc.CardBody(
                             create_temperature_tabs(fig_temp_early,fig_temp_recent)
-                        )   
+                        ),
+                        dbc.CardFooter('''Änderung der globalen Oberflächentemperatur im Vergleich zur durchschnittlichen 
+                                        Temperatur im vorindustriellen Zeitalter (1850-1900). ''')   
                     ])
                     ],style={"margin-bottom":"30px"},
                     width={"size":10,"offset":1}), # Close first row

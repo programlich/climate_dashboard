@@ -98,7 +98,7 @@ def create_emission_tabs(dict_list_countries):
                             dbc.Col([
                             html.Div([
                             dbc.Switch( id="cummulation_switch",
-                                    value=False,
+                                    value=True,
                                     label="Kummulierte Emissionen",
                                     style={"margin-bottom":"10px"}),
                         
