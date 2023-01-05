@@ -232,7 +232,7 @@ app.layout = dbc.Container([
                     ],style={"textAlign":"center"})
                     ]),
                 # Emissions Content
-                dbc.CardBody(create_emission_tabs(dict_list_countries),
+                dbc.CardBody(create_emission_tabs(dict_list_countries,app),
                             ),
                 dbc.CardFooter('''Darstellung der CO\u2082-Emissionen einzelner Länder in einem bestimmten Jahr. 
                                 Zu sehen sind jeweils die gesamten Emissionen eines Landes in Gigatonnen (Gt) und

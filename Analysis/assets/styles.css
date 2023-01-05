@@ -1,17 +1,23 @@
 circle {
-    stroke-width: 12px;
+    stroke-width: 18px;
 }
 
 .needle {
-    stroke: #72706f;
-    stroke-width: 3px;
+    display: none;
   }
   
   .eYakCx .scale {
-    font-size: 12px;
-    fill: #d3cdcc;
+      display: none;
+  }
+
+  .eYakCx .needle-knob {
+      display: none;
+  }
+
+  .eYakCx .track {
+    stroke: rgba(230, 211, 157, 0.265);
   }
 
   .sc-iwsKbI .eYakCx{
-    color: "white";
+    color: "red";
   }
