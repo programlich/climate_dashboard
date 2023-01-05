@@ -107,7 +107,7 @@ used_since_jan_22 = time_since_jan22.total_seconds() * average_global_co2_per_se
 # Remaining co2 budget
 remaining_budget = 400 - emissions_20_21/1000 - used_since_jan_22/1000    #Remaining co2 budget in Gt
 
-
+#test
 ##########
 # Budget
 ##########
