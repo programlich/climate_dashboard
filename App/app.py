@@ -23,13 +23,15 @@ template = "quartz"
 
 load_figure_template(template)
 
+# Get path of working directory
+wc_path = os.getcwd()
 
 ###############################
 ## Global temperature change ##
 ###############################
 
 # Create df for temperature from 1-1990
-temp_early = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/temperature_early.csv")
+temp_early = pd.read_csv(wc_path+"/App/data/temperature_early.csv")
 fig_temp_early = px.line(data_frame=temp_early, x="year", y="temp",
     labels={"year":"Jahr","temp":"Temperaturänderung / °C"},width=800)
 fig_temp_early.update_layout(xaxis_range=[0,1990],
@@ -42,7 +44,7 @@ fig_temp_early.update_xaxes(linecolor="white",showgrid=False,zeroline=False)
 fig_temp_early.update_yaxes(linecolor="white",showgrid=False,zeroline=False)
    
 # Create df for recente temperature changes
-temp_recent = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/temperature_recent.csv")
+temp_recent = pd.read_csv(wc_path+"/App/data/temperature_recent.csv")
 fig_temp_recent = px.line(data_frame=temp_recent, x="year", y="observed",
     labels={"year":"Jahr","observed":"Temperaturänderung / °C"},width=800)
 fig_temp_recent.update_layout(xaxis_range=[1850,2023],yaxis_range=[-0.5,1.5],
@@ -65,13 +67,13 @@ fig_temp_line.update_layout(xaxis_range=[1850,2023],yaxis_range=[-0.5,1.5])
 #############
 
 # Import emission data per country
-emissions_country = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_country.csv")
+emissions_country = pd.read_csv(wc_path+"/App/data/emissions_country.csv")
 
 # Import emission data per capita
-emissions_capita = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_country.csv")
+emissions_capita = pd.read_csv(wc_path+"/App/data/emissions_country.csv")
 
 #Import inverted and merged emissions
-emissions_inverted_merged = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_inverted_merged.csv")
+emissions_inverted_merged = pd.read_csv(wc_path+"/App/data/emissions_inverted_merged.csv")
 
 # Create a dict list of all countries for the dropdown menu
 dict_list_countries = []
@@ -109,12 +111,12 @@ remaining_budget = 400 - emissions_20_21/1000 - used_since_jan_22/1000    #Remai
 ##########
 # Budget
 ##########
-budget = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_gauge.csv")
+budget = pd.read_csv(wc_path+"/App/data/emissions_gauge.csv")
 
 #####################
 # CO2 concentration #
 #####################
-concentration = pd.read_csv("/home/matthias/Python/Klimadashboard/Analysis/data/co2_concentration_total.csv")
+concentration = pd.read_csv(wc_path+"/App/data/co2_concentration_total.csv")
 
 
 ############

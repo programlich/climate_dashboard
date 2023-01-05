@@ -1,6 +1,11 @@
 import pandas as pd
 import locale
+import os
 locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
+
+# Get path of working directory
+wc_path = os.getcwd()
+
 ##########
 # BUDGET #
 ##########
@@ -25,7 +30,7 @@ def calc_remaining_budget(row):
 
     return remaining_budget
 
-emissions_country = pd.read_excel("/home/matthias/Python/Klimadashboard/Analysis/data/raw/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx",
+emissions_country = pd.read_excel(wc_path+"/App/data/raw/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx",
                                      sheet_name="fossil_CO2_totals_by_country").dropna()
 
 # Select only global emissions an swap cols with rows
@@ -63,4 +68,4 @@ budget.loc[~budget["date"].dt.year.isin([2020,2021]),"emissions"] = emissions_pe
 budget["remaining"] = budget.apply(calc_remaining_budget, axis=1)
 
 
-budget.to_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_gauge.csv",index=False)
+budget.to_csv(wc_path+"/App/data/emissions_gauge.csv",index=False)

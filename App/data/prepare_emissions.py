@@ -1,4 +1,8 @@
 import pandas as pd
+import os
+
+# Get path of working directory
+wc_path = os.getcwd()
 
 # Function for calculating the cumulated emissions of a country
 def calc_cumulated_emissions(row):
@@ -10,11 +14,11 @@ def calc_cumulated_emissions(row):
     return cumulated_emissions
 
 # Import emission per country data
-emissions_country = pd.read_excel("/home/matthias/Python/Klimadashboard/Analysis/data/raw/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx", 
+emissions_country = pd.read_excel(wc_path+"/App/data/raw/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx", 
                                     sheet_name="fossil_CO2_totals_by_country").dropna()
 
 # Import emission per capita data
-emissions_capita = pd.read_excel("/home/matthias/Python/Klimadashboard/Analysis/data/raw/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx",
+emissions_capita = pd.read_excel(wc_path + "/App/data/raw/EDGARv7.0_FT2021_fossil_CO2_booklet_2022.xlsx",
                                  sheet_name="fossil_CO2_per_capita_by_countr",skipfooter=3).dropna()
 
 
@@ -32,4 +36,4 @@ emissions_inverted_merged["emissions_country"] = emissions_inverted_merged["emis
 
 emissions_inverted_merged["emissions_cumulated"] = emissions_inverted_merged.apply(calc_cumulated_emissions, axis=1)
 
-emissions_inverted_merged.to_csv("/home/matthias/Python/Klimadashboard/Analysis/data/emissions_inverted_merged.csv",index=False)
+emissions_inverted_merged.to_csv(wc_path+"/App/data/emissions_inverted_merged.csv",index=False)
