@@ -107,7 +107,7 @@ used_since_jan_22 = time_since_jan22.total_seconds() * average_global_co2_per_se
 # Remaining co2 budget
 remaining_budget = 400 - emissions_20_21/1000 - used_since_jan_22/1000    #Remaining co2 budget in Gt
 
-#test
+
 ##########
 # Budget
 ##########
@@ -152,7 +152,6 @@ app.layout = dbc.Container([
                                     value=200,
                                     max=400,
                                     min=0,
-                                    units="Gt",
                                     color = "#c5860d"
                                     ),style={"height":"200px"} #for some reason this reduces the unnecessary space between gauge and slider
                                     )],style={"textAlign":"center","margin-top":"4px"}),
@@ -188,7 +187,7 @@ app.layout = dbc.Container([
                 dbc.Card([
                     dbc.CardHeader([
                         html.Div([
-                        html.H2("CO\u2082 Konzentration in der Atmosphäre",style={"textAlign":"center","display":"inline-block"}),
+                        html.H2("CO\u2082-Konzentration in der Atmosphäre",style={"textAlign":"center","display":"inline-block"}),
                         html.Div(concentration_modal,style={"display":"inline-block","float":"right"})
                         ],style={"textAlign":"center"})
                         ]),
@@ -228,7 +227,7 @@ app.layout = dbc.Container([
                 # Header
                 dbc.CardHeader([
                     html.Div([
-                    html.H3("CO\u2082 Emissionen durch Verbrennung fossiler Energieträger",
+                    html.H3("CO\u2082-Emissionen durch Verbrennung fossiler Energieträger",
                                 style={"textAlign":"center","display":"inline-block"}),
                     html.Div(emissions_modal,style={"float":"right","display":"inline-block"})
                     ],style={"textAlign":"center"})

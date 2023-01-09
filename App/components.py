@@ -38,7 +38,7 @@ my_color_palette = ["#ffca03",
 ssp_checklist = html.Div(
     [
         html.I(className="bi bi-info-circle-fill me-2"),
-        dbc.Label("Szenarien",id="pop1"),
+        dbc.Label("Szenarien",id="popover_scenarios"),
         
         dbc.Checklist(
             options=[
@@ -58,7 +58,7 @@ ssp_checklist = html.Div(
                                 auf das Klima simuliert werden.    
                                 Klicke auf **Info SSP** für mehr Informationen.
                                 '''),
-            target="pop1",
+            target="popover_scenarios",
             body=True,
             trigger="hover",
         )
@@ -67,7 +67,7 @@ ssp_checklist = html.Div(
 )
 
 ssp_infotext = dcc.Markdown('''
-Der IPCC stellt in seinem sechsten Assesment Report (AR6)
+Der [IPCC](https://www.ipcc.ch/) stellt in seinem sechsten Assesment Report ([AR6](https://www.ipcc.ch/assessment-report/ar6/))
 fünf Szenarien vor, in denen die Auswirkung unterschiedlich starker
 Treibhausgasemissionen auf das Klima modelliert werden.
 * **SSP 1-1.9**: Sehr geringe Emissionen, Nettonull ab ca. 2050
@@ -86,7 +86,7 @@ ssp_modal = html.Div(
         dbc.Button(html.B("Info SSP"), id="open_ssp_modal", n_clicks=0),
         dbc.Modal(
             [
-                dbc.ModalHeader(dbc.ModalTitle("Social pathway")),
+                dbc.ModalHeader(dbc.ModalTitle("Social economic pathway")),
                 dbc.ModalBody(ssp_infotext),
                 dbc.ModalFooter(
                     dbc.Button(
@@ -157,7 +157,7 @@ def create_emission_tabs(dict_list_countries,app):
                 #open menu col
                 dbc.Col([
                     html.Div([  #buttons div
-                        dbc.Label("Sortieren nach:"),
+                        dbc.Label("Sortieren nach:", id="popover_emissions_sort"),
                         dbc.RadioItems(
                             id="toplist_buttons",
                             options=[
@@ -166,9 +166,20 @@ def create_emission_tabs(dict_list_countries,app):
                                 {"label": "Kummulierte Emissionen", "value": "emissions_cumulated"},
                             ],
                             value="emissions_country"),
+
+                        dbc.Popover(
+                        dcc.Markdown(
+'''Die Rangliste ordnet Länder entsprechend einer von drei möglichen Kategorien an:
+* Emissionen in einem bestimmten Jahr
+* Pro Kopf Emissionen in einem bestimmten Jahr
+* Von 1970 bis zum gewählten Jahr insgesamt ausgestoßene Menge an CO\u2082 (kummulierte Emissionen)
+                        '''),
+                        target="popover_emissions_sort",
+                        body=True,
+                        trigger="hover")
                         ],style={"margin-top":"10%","margin-bottom":"20px"}
                     ), #close buttons div
-                                
+                           
                     # Dropdowns
                     html.Div("Top"),    
                         dcc.Dropdown(id="top_dd",
@@ -182,7 +193,7 @@ def create_emission_tabs(dict_list_countries,app):
                         dcc.Dropdown(id="year_dd",
                                  placeholder = "Jahr",
                                  options=year_dd_list,
-                                 value = 2020,
+                                 value = 2021,
                                  multi=False)
 
                     ],width=2) #close menu col    
@@ -249,15 +260,14 @@ def create_temperature_tabs(fig_temp_early, fig_temp_recent):
 
 # Budget modal
 budget_infotext = dcc.Markdown('''
-Der IPCC hat im sechsten Assesment Report (AR6) ausgerechnet, wie viel CO\u2082 ab Beginng 2020
-noch in die Atmosphäre gelangen darf, um das 1,5°C Ziel mit einer Wahrscheinlichkeit von 2/3 noch erreichen 
-zu können. Diese Menge an CO\u2082 betrug 400 Gt. Mit den Emissionsdaten aus der 
-[*EDGAR*](https://edgar.jrc.ec.europa.eu/report_2022)-Datenbank konnte
-das emittierte CO\u2082 in den Jahren 2020 und 2021 von diesem Budget abgezogen werden. Darüberhinaus 
-legt die Berechung dieser Graphik die Annahme zugrunde, dass künftig mit einer konstanten Rate CO\u2082 emittiert.
-Diese Rate wurde mit Hilfe der durchschnittlichen CO\u2082-Emissionen der Jahre 2015-2021 berechnet. Die Emissionen
-im Jahre 2020 wurden dabei *nicht* berücksichtigt, da diese aufgrund der Corona-Pandemie außergewöhnlich niedrig
-waren.  
+Der [IPCC](https://www.ipcc.ch/) hat im sechsten Assesment Report ([AR6](https://www.ipcc.ch/assessment-report/ar6/)) ausgerechnet, wie viel CO\u2082 ab Januar 2020
+noch in die Atmosphäre gelangen darf, um das 1,5°C Ziel mit einer Wahrscheinlichkeit von 2/3 nicht zu verfehlen.
+Diese Menge an CO\u2082 betrug 400 Gigatonnen (Gt).  
+Mit den Emissionsdaten aus der [EDGAR](https://edgar.jrc.ec.europa.eu/report_2022)-Datenbank konnte
+das emittierte CO\u2082 in den Jahren 2020 und 2021 von diesem Budget abgezogen werden. Die Emissionen für den Zeitraum danach
+werden unter der Annahme eines konstanten Ausstoßes berechnet. Dafür werden die dutschnittlichen Emissionen 
+aus dem Zeitraum 2015-2021 berechnet(Die Emissionen im Jahre 2020 wurden dabei *nicht* berücksichtigt, da
+diese aufgrund der Corona-Pandemie außergewöhnlich niedrig waren).  
 
 Quelle: [IPCC AR6, Tabelle SPM.2](https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_SPM_final.pdf#page=33) ''')
 
@@ -282,23 +292,23 @@ budget_modal = html.Div(
 
 # Concentration modal
 concentration_infotext = dcc.Markdown('''
-Der IPCC veröffentlicht im Anhang des sechsten Assesment Report (AR6)
-Daten zur CO\u2082-Konzentration in der Atmosphäre ab 1850. Diese Daten sind durch die blaue
+Der [IPCC](https://www.ipcc.ch/) hat im Anhang des sechsten Assesment Report ([AR6](https://www.ipcc.ch/assessment-report/ar6/))
+Daten zur CO\u2082-Konzentration in der Atmosphäre seit 1850 veröffentlicht. Diese Daten sind durch die blaue
 Kurve (gemessen) dargestellt. Darüber hinaus hat der IPCC Modellszenarien erstellt,
 die die künftige CO\u2082-Konzentration in der Atmosphäre unter verschiedenen Randbedingungen 
-simuliert. Diese Szenarien werden mit SSP und einer Nummer abgekürzt und können durch Auswahl
+simuliert. Diese Szenarien werden mit SSP (social economic pathway) und einer Nummer abgekürzt und können durch Auswahl
 der einzelnen Checkboxen angezeigt werden.  
 
 Quelle: [IPCC AR6 Annex III](https://www.ipcc.ch/report/ar6/wg1/downloads/report/IPCC_AR6_WGI_AnnexIII.pdf)  
-[Datensatz CO\u2082-Konzentration 1850-2020](https://zenodo.org/record/5705391)  
-Daten CO\u2082 Konzentration SSPs: AR6 Annex III, Tabelle AIII.2''')
+Datensatz: [CO\u2082-Konzentration 1850-2020](https://zenodo.org/record/5705391)  
+CO\u2082 Konzentration SSPs: [AR6 Annex III](https://www.ipcc.ch/report/ar6/wg3/downloads/report/IPCC_AR6_WGIII_Annex-III.pdf), Tabelle AIII.2''')
 
 concentration_modal = html.Div(
     [
         dbc.Button("Info", id="open_concentration_modal", n_clicks=0),
         dbc.Modal(
             [
-                dbc.ModalHeader(dbc.ModalTitle("CO\u2082 Konzentration")),
+                dbc.ModalHeader(dbc.ModalTitle("Atmosphärische CO\u2082-Konzentration")),
                 dbc.ModalBody(concentration_infotext),
                 dbc.ModalFooter(
                     dbc.Button(
@@ -314,10 +324,10 @@ concentration_modal = html.Div(
 
 # Emission modal
 emission_infotext = dcc.Markdown('''
-Daten zu CO\u2082 Emissionen aller Länder stellt die europäische Komission in der Datenbank *EDGAR*
-(Emissions Database for Global Atmospheric Research) zur Verfügung. Zur Ermittlung der darin enthaltenen Daten
+Die europäische Komission stellt in der Datenbank *EDGAR* (Emissions Database for Global Atmospheric Research)
+Daten über die weltweiten CO\u2082-Emissionen seit 1970 zur Verfügung. Zur Ermittlung der darin enthaltenen Daten
 werden vom IPCC empfohlene [Methoden](https://edgar.jrc.ec.europa.eu/methodology) verwendet.  
-Die hier gezeigten Darstellungen wurden auf Basis der Daten des Berichts über 
+Die hier gezeigten Darstellungen wurden auf Basis des Berichts über 
 [*CO\u2082 Emissionen aller Länder*](https://edgar.jrc.ec.europa.eu/report_2022) erstellt.
 Darin sind Daten zu den Emissionen von 208 einzelnen Ländern seit dem Jahre 1970 enthalten. Die Emissionen werden
 sowohl für den Ausstoß pro Land als auch pro Land und Kopf angegeben. Die kummulierten Emissionen wurden für das 
@@ -332,7 +342,7 @@ emissions_modal = html.Div(
         dbc.Button("Info", id="open_emission_modal", n_clicks=0),
         dbc.Modal(
             [
-                dbc.ModalHeader(dbc.ModalTitle("CO\u2082 Emissionen")),
+                dbc.ModalHeader(dbc.ModalTitle("CO\u2082-Emissionen")),
                 dbc.ModalBody(emission_infotext),
                 dbc.ModalFooter(
                     dbc.Button(
@@ -348,7 +358,8 @@ emissions_modal = html.Div(
 
 # Temperature modal
 temp_infotext = dcc.Markdown('''
-Die Diagramme zeigen jeweils die Änderung der globalen Oberflächentemperatur relativ zur durchschnittlichen Temperatur von 1850-1900.
+Die Diagramme zeigen jeweils die Änderung der globalen Oberflächentemperatur relativ zur durchschnittlichen Temperatur von 1850-1900
+(vorindustrielles Zeitalter).
 * Im Tab **1850-2019** sind Daten abgebildet, welche durch direkte Temperaturmessungen der globalen Oberflächentemperatur ermittelt wurden.
 * Die Daten im Tab **1-1995** wurden mit Hilfe der [Paläoklimatologie](https://de.wikipedia.org/wiki/Pal%C3%A4oklimatologie) rekonstruiert. Dafür wurden natürliche Archive wie Baumringe, Eiskernbohrungen, Gestein, etc. untersucht, 
                 um Informationen über das Klima in der Vergangenheit zu erhalten. Dies ist ein notwendiges Vorgehen,
@@ -363,7 +374,7 @@ temp_modal = html.Div(
         dbc.Button("Info", id="open_temp_modal", n_clicks=0),
         dbc.Modal(
             [
-                dbc.ModalHeader(dbc.ModalTitle("Änderung der Oberflächentemperatur")),
+                dbc.ModalHeader(dbc.ModalTitle("Änderung der globalen Oberflächentemperatur")),
                 dbc.ModalBody(temp_infotext),
                 dbc.ModalFooter(
                     dbc.Button(

@@ -3,16 +3,17 @@ circle {
 }
 
 .needle {
+  display: none;
+}
+ .eYakCx .needle-knob {
     display: none;
-  }
-  
-  .eYakCx .scale {
-      display: none;
-  }
+} 
 
-  .eYakCx .needle-knob {
-      display: none;
-  }
+.eYakCx .scale {
+    display: none;
+}
+
+
 
   .eYakCx .track {
     stroke: rgba(230, 211, 157, 0.265);
