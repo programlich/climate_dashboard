@@ -1,8 +1,6 @@
 *.pyc
 *.obsidian
-Klimadaten.md
 *.cpython-39.pyc
 __pycache__
 components.cpython-39.pyc
-sample_code.py
-Daten/
+Obsidian/
