@@ -11,9 +11,12 @@ import os
 from dash_bootstrap_templates import load_figure_template
 import locale
 
+from components import *
 from components import ssp_checklist, ssp_modal, create_emission_tabs, create_temperature_tabs
 from components import budget_modal, concentration_modal, emissions_modal, temp_modal
 from components import my_color_palette
+
+import src.functions.visualization as vsz
 
 locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
 dbc_css = os.path.abspath("assets/dbc.min.css")
@@ -30,34 +33,9 @@ wc_path = os.getcwd()
 
 # Create df for temperature from 1-1990
 temp_early = pd.read_csv("../data/clean/temperature_early.csv")
-fig_temp_early = px.line(data_frame=temp_early, x="year", y="temp",
-                         labels={"year": "Jahr", "temp": "Temperaturänderung / °C"}, width=800)
-fig_temp_early.update_layout(xaxis_range=[0, 1990],
-                             yaxis_range=[-0.2, 0.8],
-                             paper_bgcolor='rgba(0,0,0,0)',
-                             plot_bgcolor='rgba(0,0,0,0)',
-                             modebar=dict(bgcolor='rgba(0, 0, 0, 0)'))
-fig_temp_early.update_traces(line_color="#c5860d")
-fig_temp_early.update_xaxes(linecolor="white", showgrid=False, zeroline=False)
-fig_temp_early.update_yaxes(linecolor="white", showgrid=False, zeroline=False)
 
 # Create df for recent temperature changes
 temp_recent = pd.read_csv("../data/clean/temperature_recent.csv")
-fig_temp_recent = px.line(data_frame=temp_recent, x="year", y="observed",
-                          labels={"year": "Jahr", "observed": "Temperaturänderung / °C"}, width=800)
-fig_temp_recent.update_layout(xaxis_range=[1850, 2023], yaxis_range=[-0.5, 1.5],
-                              paper_bgcolor='rgba(0,0,0,0)',
-                              plot_bgcolor='rgba(0,0,0,0)',
-                              modebar=dict(bgcolor='rgba(0, 0, 0, 0)'))
-fig_temp_recent.update_traces(line_color="#c5860d")
-fig_temp_recent.update_xaxes(linecolor="white", showgrid=False, zeroline=False)
-fig_temp_recent.update_yaxes(linecolor="white", showgrid=False, zeroline=False)
-
-# line chart figure for recent temperature changes
-fig_temp_line = px.line(data_frame=temp_recent, x="year", y="observed",
-                        labels={"year": "Jahr", "observed": "Temperaturänderung / °C"},
-                        width=800, template=template)
-fig_temp_line.update_layout(xaxis_range=[1850, 2023], yaxis_range=[-0.5, 1.5])
 
 #############
 # Emissions #
@@ -80,36 +58,6 @@ for country in emissions_inverted_merged["Country"].unique().tolist():
     this_dict["value"] = country
     dict_list_countries.append(this_dict)
 
-# Yearly global co2 emissions
-global_total = emissions_country.loc[emissions_country["Country"] == "GLOBAL TOTAL", "1970":].melt(var_name="year",
-                                                                                                   value_name=
-                                                                                                   "total_emissions")
-global_total["year"] = global_total["year"].astype(int)
-
-# Calculate the average global co2 emissions between 2015 and 2021. Year 2020 will not be
-# part of the average because the emissions
-# where quite low due to the covid pandemic                                 
-global_avg_15_21 = global_total.loc[
-    global_total["year"].isin([2015, 2016, 2017, 2018, 2019, 2021]), "total_emissions"].mean()
-
-
-def year_global_total_emissions(year):
-    return global_total.loc[global_total["year"] == year, "total_emissions"].item()
-
-
-# Emissions of 2020 and 2021
-emissions_20_21 = (year_global_total_emissions(2020) + year_global_total_emissions(2021))
-
-# Emissions since january 2022
-average_global_co2_per_second = global_avg_15_21 / 365 / 24 / 60 / 60 * 1000000000  # value in t/s
-time_since_jan22 = dt.datetime.now() - dt.datetime(2022, 1, 1)  # Time difference between jan 2020 and now
-
-# Used co2 budget since jan2020 in Gt
-used_since_jan_22 = time_since_jan22.total_seconds() * average_global_co2_per_second / 1000000000
-
-# Remaining co2 budget
-remaining_budget = 400 - emissions_20_21 / 1000 - used_since_jan_22 / 1000  # Remaining co2 budget in Gt
-
 ##########
 # Budget
 ##########
@@ -126,143 +74,76 @@ concentration = pd.read_csv("../data/clean/co2_concentration_total.csv")
 
 app = dash.Dash(__name__)
 
+
 app.layout = dbc.Container([
 
-    # Title row
-    dbc.Row(
-        justify="center", style={"margin-top": "25px"}),
+        # Title row for giving some space
+        dbc.Row(
+            justify="center", style={"margin-top": "25px"}),
 
-    # concentration and budget row
-    dbc.Row([
-        # Budget col
-        dbc.Col([
-            dbc.Card([
-                dbc.CardHeader([
-                    html.H2("CO\u2082 Budget", style={"textAlign": "center", "display": "inline-block"}),
-                    html.Div(budget_modal, style={"float": "right", "display": "inline"})
-                ]),
-                html.Br(),
-                dbc.CardBody([
-                    html.Div(
-                        daq.Gauge(id="fig_emissions_gauge",
-                                  showCurrentValue=True,
-                                  value=200,
-                                  max=400,
-                                  min=0,
-                                  color="#c5860d"
-                                  ), style={"height": "200px"}
-                        # for some reason this reduces the unnecessary space between gauge and slider
-                    )], style={"textAlign": "center", "margin-top": "4px"}),
-                html.H3(id="month_budget", style={"textAlign": "center"}),
+        # concentration and budget row
+        dbc.Row([
+            # Budget column
+            dbc.Col([
+                create_budget_card(card_header="CO\u2082 Budget",
+                                   card_footer='''Menge an CO\u2082, das noch emittiert werden darf, 
+                               bevor das 1,5-Grad-Ziel verfehlt wird.''',
+                                   card_style={"margin-bottom": "5%",
+                                               'padding': '0px 0px 8px 0px',
+                                               "height": "97%"}),
 
-                html.Div(dcc.Slider(id="gauge_slider", min=1, max=180,
-                                    marks={1: {"label": "2020", "style": {"font-size": "20px"}},
-                                           60: {"label": "2025", "style": {"font-size": "20px"}},
-                                           120: {"label": "2030", "style": {"font-size": "20px"}},
-                                           180: {"label": "2035", "style": {"font-size": "20px"}}
-                                           },
-                                    updatemode="drag"),  # close slider
+            ], width={"size": 4, "offset": 0}),  # styling budget column
 
-                         style={"margin-bottom": "5%",
-                                "margin-right": "2%",
-                                "margin-left": "2%"}),  # close slider Div
+            # Concentration Column
+            dbc.Col(
+                # Header
+                create_concentration_card(card_header="CO\u2082-Konzentration in der Atmosphäre",
+                                          card_footer='''Historischer Verlauf der CO\u2082-Konzentration 
+                                      in der Atmosphäre, sowie verschiedene Szenarien, die der IPCC entwickelt hat. 
+                                      Das 1,5-Grad-Ziel lässt sich nur mit dem ersten Szenario (SSP1-1.9) 
+                                      erreichen.''',
+                                          card_style={"height": "97%"}),
 
-                html.Div(
-                    dbc.Button("Heute", outline=True, color="danger", id="button_today", n_clicks=0),
-                    style={"textAlign": "center", "margin-bottom": "5%", }
-                ),
-                dbc.CardFooter('''Menge an CO\u2082, das noch emittiert werden darf, 
-                                        bevor das 1,5-Grad-Ziel verfehlt wird.''', style={"textAlign": "center"})
+                width=8),  # close concentration col
 
-            ], style={"margin-bottom": "5%",
-                      'padding': '0px 0px 8px 0px',
-                      "height": "97%"})],  # styling budget card
-            width={"size": 4, "offset": 0}),  # styling budget col
-        # Concentration Column
-        dbc.Col(
-            # Header
-            dbc.Card([
-                dbc.CardHeader([
-                    html.Div([
-                        html.H2("CO\u2082-Konzentration in der Atmosphäre",
-                                style={"textAlign": "center", "display": "inline-block"}),
-                        html.Div(concentration_modal, style={"display": "inline-block", "float": "right"})
-                    ], style={"textAlign": "center"})
-                ]),
+        ], style={"margin-bottom": "0%"}),  # close concentration and budget row
 
-                # Content row
-                dbc.Row([
-                    # Figure col
-                    dbc.Col([
-                        dcc.Graph(id="fig_concentration")
-                    ], width=10),  # close figure col
+        # Emissions row
+        create_emission_card(card_header="CO\u2082-Emissionen durch Verbrennung fossiler Energieträger",
+                             card_footer='''Darstellung der CO\u2082-Emissionen einzelner Länder in einem bestimmten Jahr.
+                             Zu sehen sind jeweils die gesamten Emissionen eines Landes in Gigatonnen (Gt) und
+                             die pro Kopf Emissionen in Tonnen (t). Die Größe der Blase gibt die CO\u2082-Menge an,
+                             die das Land seit 1970 bis zum gewählten Jahr emittiert hat.''',
+                             card_style={"margin-bottom": "2%"},
+                             dict_list_countries=dict_list_countries,
+                             app=app),
 
-                    # Menu col
-                    dbc.Col([
-                        html.Br(),
-                        html.Br(),
-                        ssp_checklist,  # Select certain ssp data
-                        ssp_modal  # Explenation on ssp
-                    ], width=2),  # close menu col
+        # Temperature row
+        dbc.Row([
+            # First col
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader([
+                        html.Div([
+                            html.H2("Globale Oberflächentemperatur",
+                                    style={"textAlign": "center", "display": "inline-block"}),
+                            temp_modal
+                        ], style={"textAlign": "center"})
+                    ]),
 
-                ]),  # close content row
-                dbc.CardFooter('''Historischer Verlauf der CO\u2082-Konzentration in der Atmosphäre, 
-                                    sowie verschiedene Szenarien, die der IPCC entwickelt hat. 
-                                    Das 1,5-Grad-Ziel lässt sich nur mit dem ersten Szenario 
-                                    (SSP1-1.9) erreichen.''', style={"textAlign": "center"})
-            ], style={"height": "97%"}  # styling concentration
-            ),  # close concentration card
-            width=8),  # close concentration col
-
-    ], style={"margin-bottom": "0%"}),  # close concentration and budget row
-
-    # Emissions row
-    dbc.Card([
-        # Header
-        dbc.CardHeader([
-            html.Div([
-                html.H3("CO\u2082-Emissionen durch Verbrennung fossiler Energieträger",
-                        style={"textAlign": "center", "display": "inline-block"}),
-                html.Div(emissions_modal, style={"float": "right", "display": "inline-block"})
-            ], style={"textAlign": "center"})
-        ]),
-        # Emissions Content
-        dbc.CardBody(create_emission_tabs(dict_list_countries, app),
-                     ),
-        dbc.CardFooter('''Darstellung der CO\u2082-Emissionen einzelner Länder in einem bestimmten Jahr. 
-                                Zu sehen sind jeweils die gesamten Emissionen eines Landes in Gigatonnen (Gt) und
-                                die pro Kopf Emissionen in Tonnen (t). Die Größe der Blase gibt die CO\u2082-Menge an,
-                                die das Land seit 1970 bis zum gewählten Jahr emittiert hat.''',
-                       style={"textAlign": "center"})
-    ], style={"margin-bottom": "2%"}
-    ),
-
-    # Temperature row
-    dbc.Row([
-        # First col
-        dbc.Col([
-            dbc.Card([
-                dbc.CardHeader([
-                    html.Div([
-                        html.H2("Globale Oberflächentemperatur",
-                                style={"textAlign": "center", "display": "inline-block"}),
-                        temp_modal
-                    ], style={"textAlign": "center"})
-                ]),
-
-                dbc.CardBody(
-                    create_temperature_tabs(fig_temp_early, fig_temp_recent)
-                ),
-                dbc.CardFooter('''Änderung der globalen Oberflächentemperatur im Vergleich zur durchschnittlichen 
+                    dbc.CardBody(
+                        create_temperature_tabs(vsz.create_fig_temp_early(temp_early),
+                                                vsz.create_fig_temp_recent(temp_recent))
+                    ),
+                    dbc.CardFooter('''Änderung der globalen Oberflächentemperatur im Vergleich zur durchschnittlichen 
                                         Temperatur im vorindustriellen Zeitalter (1850-1900).''',
-                               style={"textAlign": "center"})
-            ])
-        ], style={"margin-bottom": "30px"},
-            width={"size": 10, "offset": 1}),  # Close first row
-    ])  # close temperature row
+                                   style={"textAlign": "center"})
+                ])
+            ], style={"margin-bottom": "30px"},
+                width={"size": 10, "offset": 1}),  # Close first row
+        ])  # close temperature row
 
-], className="dbc")  # close dbc container
-
+    ], className="dbc")  # close dbc container
 
 # Callback for CO2 concentration
 @app.callback(Output(component_id="fig_concentration", component_property="figure"),
@@ -270,7 +151,6 @@ app.layout = dbc.Container([
               )
 def plot_concentration(checked):
     concentration_copy = concentration.copy(deep=True)
-
     show_list = ["gemessen"] + checked  # Select all lines to be shown
 
     # Select all the corresponding colors to the selected data
@@ -327,11 +207,12 @@ def update_gauge(slider, today_click):
     today_month = dt.datetime.now().strftime("%B")
 
     # Case 0: Initial state
-    this_budget = budget_copy.loc[
-        (budget_copy["year"] == today_year) & (budget_copy["month"] == today_month), "remaining"].item()
+    this_budget = budget_copy.loc[(budget_copy["year"] == today_year) & (budget_copy["month"] == today_month),
+    "remaining"].item()
     date = f"{today_month} {today_year}"
     slider_value = \
-    budget_copy.loc[(budget_copy["year"] == today_year) & (budget_copy["month"] == today_month), "remaining"].index[0]
+        budget_copy.loc[(budget_copy["year"] == today_year) & (budget_copy["month"] == today_month), "remaining"].index[
+            0]
 
     # Case 1: Slider moved
     if slider:
@@ -347,8 +228,9 @@ def update_gauge(slider, today_click):
             (budget_copy["year"] == today_year) & (budget_copy["month"] == today_month), "remaining"].item()
         date = f"{today_month} {today_year}"
         slider_value = \
-        budget_copy.loc[(budget_copy["year"] == today_year) & (budget_copy["month"] == today_month), "remaining"].index[
-            0]
+            budget_copy.loc[
+                (budget_copy["year"] == today_year) & (budget_copy["month"] == today_month), "remaining"].index[
+                0]
 
     gauge = daq.Gauge(
         showCurrentValue=True,
@@ -389,7 +271,6 @@ def update_figure(selection, cumulated_on):
     if cumulated_on:
         # Make plot with all countries if there is no selection
         size = "emissions_cumulated"
-
     else:
         # Make plot with all countries if there is no selection
         size = None
